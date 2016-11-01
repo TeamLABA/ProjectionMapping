@@ -239,7 +239,7 @@ void ProjectionMapping2App::setup()
 		console() << "Failed to initialize capture" << std::endl;
 	}
 
-	sw = 4;		//1:BasicApp, 2:fireApp, 3:PenkiApp, 4:TurnCube, 5:Shabon, 6:window, 7:movie, 8:soul
+	sw = 1;		//1:BasicApp, 2:fireApp, 3:PenkiApp, 4:TurnCube, 5:Shabon, 6:window, 7:movie, 8:soul
 	avi = 3;	//movie 3:openingMovie.mp4
 
 	resetup(sw);
