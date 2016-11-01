@@ -93,6 +93,12 @@ const int window_N = 100;
 
 clock_t time_start, time_end;
 
+//表示場所指定用
+int P1 = 640 - 240 + 5;	//271
+int P2 = 640 + 225 + 5;	//442
+int P3 = 400 - 260 - 3;	//148
+int P4 = 400 + 220 - 3;	//301
+
 class ProjectionMapping2App : public AppNative {
 public:
 	void setup();
@@ -147,7 +153,7 @@ public:
 	std::random_device rnd;
 
 	/*TurnCube*/
-//	void reload();
+	//	void reload();
 	void fileDrop(FileDropEvent event);
 
 	gl::Texture TurnCube_mTexture;
@@ -201,15 +207,16 @@ public:
 	int soul_INorOUT = 0;
 	double soul_N;
 	void DrawGaussian();
+	ci::Vec2f Pos_xy, InputXY;
 
-//protected:
+	//protected:
 	/*BasicApp*/
 	float BasicApp_pos[2][BasicApp_N][BasicApp_N];
 	MayaCamUI mMayaCam;
 	CameraPersp cam;
 
 
-//private:
+	//private:
 	/*PenkiApp*/
 	struct Waterdrop{
 		ci::Vec2d PenkiApp_pos;
@@ -239,7 +246,7 @@ void ProjectionMapping2App::setup()
 		console() << "Failed to initialize capture" << std::endl;
 	}
 
-	sw = 1;		//1:BasicApp, 2:fireApp, 3:PenkiApp, 4:TurnCube, 5:Shabon, 6:window, 7:movie, 8:soul
+	sw = 8;		//1:BasicApp, 2:fireApp, 3:PenkiApp, 4:TurnCube, 5:Shabon, 6:window, 7:movie, 8:soul
 	avi = 3;	//movie 3:openingMovie.mp4
 
 	resetup(sw);
@@ -247,7 +254,7 @@ void ProjectionMapping2App::setup()
 
 }
 
-void ProjectionMapping2App::mouseDown( MouseEvent event )
+void ProjectionMapping2App::mouseDown(MouseEvent event)
 {
 	mouseX = event.getX();
 	mouseY = event.getY();
@@ -263,12 +270,12 @@ void ProjectionMapping2App::update()
 
 	console() << "time:" << (double)(time_end - time_start) / CLOCKS_PER_SEC << "[sec]" << endl;
 
-	if (ch_time > 5.0){
+	if (ch_time > 5555.0){
 		sw++;
 		if (sw > 8) sw = 1;
 		resetup(sw);
 	}
-	
+
 	/*camera_ctApp*/
 	Mat input1(toOcv(mCap.getSurface()));
 	cvtColor(input1, hsv_image, CV_BGR2HSV);
@@ -335,20 +342,20 @@ void ProjectionMapping2App::update()
 		wave++;
 
 #pragma omp parallel
-			{
+		{
 #pragma omp for
-				for (int i = 1; i < BasicApp_N - 1; i++){
-					for (int j = 1; j < BasicApp_N - 1; j++){
-						BasicApp_pos[1][i][j] = ((BasicApp_pos[0][i - 1][j] + BasicApp_pos[0][i + 1][j] + BasicApp_pos[0][i][j - 1] + BasicApp_pos[0][i][j + 1] - 200) / 4 - (BasicApp_pos[0][i][j] - 50)) + BasicApp_pos[1][i][j] * 0.9;
-						if (BasicApp_pos[1][i][j]>20){
-							BasicApp_pos[1][i][j] = 20;
-						}
-						else if (BasicApp_pos[1][i][j] < -20){
-							BasicApp_pos[1][i][j] = -20;
-						}
+			for (int i = 1; i < BasicApp_N - 1; i++){
+				for (int j = 1; j < BasicApp_N - 1; j++){
+					BasicApp_pos[1][i][j] = ((BasicApp_pos[0][i - 1][j] + BasicApp_pos[0][i + 1][j] + BasicApp_pos[0][i][j - 1] + BasicApp_pos[0][i][j + 1] - 200) / 4 - (BasicApp_pos[0][i][j] - 50)) + BasicApp_pos[1][i][j] * 0.9;
+					if (BasicApp_pos[1][i][j]>20){
+						BasicApp_pos[1][i][j] = 20;
+					}
+					else if (BasicApp_pos[1][i][j] < -20){
+						BasicApp_pos[1][i][j] = -20;
 					}
 				}
 			}
+		}
 #pragma omp parallel
 			{
 #pragma omp for
@@ -492,7 +499,7 @@ void ProjectionMapping2App::update()
 		waterdrops.insert(waterdrops.end(), appends.begin(), appends.end());
 		waterdrops.remove_if([](Waterdrop obj) { return obj.life < 0; });
 	}
-	
+
 	/*TurnCubeApp*/
 	if (x > px1 && y > py1 && x < px2 && y < py2){
 		if (sw == 4){
@@ -581,7 +588,7 @@ void ProjectionMapping2App::update()
 		}
 	}
 	if (sw == 6){
-		window_r += window_flag*2;
+		window_r += window_flag * 2;
 		if (window_r > 125){
 			window_cnt++;
 			window_r = 125;
@@ -611,43 +618,43 @@ void ProjectionMapping2App::update()
 	}
 	if (sw == 8){
 		soul_input[0] = soul_x;	soul_input[1] = soul_y;
-		if (soul_PosX == 271 && soul_PosY == 148){
-			soul_Count = 442 - 271 + 1;
+		if (soul_PosX == xyLeftUp[0] && soul_PosY == xyLeftUp[1]){
+			soul_Count = xyRightDown[0] - xyLeftUp[0] + 1;
 			soul_f = 1;
 		}
-		else if (soul_PosX == 442 && soul_PosY == 148){
-			soul_Count = 301 - 148;
+		else if (soul_PosX >= xyRightDown[0] && soul_PosY == xyLeftUp[1]){
+			soul_Count = xyRightDown[1] - xyLeftUp[1];
 			soul_f = 2;
 		}
-		else if (soul_PosX == 442 && soul_PosY == 301){
-			soul_Count = 442 - 271;
+		else if (soul_PosX == xyRightDown[0] && soul_PosY == xyRightDown[1]){
+			soul_Count = xyRightDown[0] - xyLeftUp[0];
 			soul_f = 3;
 		}
-		else if (soul_PosX == 271 && soul_PosY == 301){
-			soul_Count = 301 - 148;
+		else if (soul_PosX == xyLeftUp[0] && soul_PosY == xyRightDown[1]){
+			soul_Count = xyRightDown[1] - xyLeftUp[1];
 			soul_f = 4;
 		}
 
 		if (soul_f == 1 && soul_Count > 0){
-			soul_PosX++; soul_Count--;
+			soul_PosX += 1; soul_Count -= 1;
 		}
 		else if (soul_f == 2 && soul_Count > 0){
-			soul_PosY++; soul_Count--;
+			soul_PosY += 1; soul_Count -= 1;
 		}
 		else if (soul_f == 3 && soul_Count > 0){
-			soul_PosX--; soul_Count--;
+			soul_PosX -= 1; soul_Count -= 1;
 		}
 		else if (soul_f == 4 && soul_Count > 0){
-			soul_PosY--; soul_Count--;
+			soul_PosY -= 1; soul_Count -= 1;
 		}
 		soul_Pos[0] = soul_PosX;
 		soul_Pos[1] = soul_PosY;
 	}
-	
+
 	//time_end = clock();
 	//console() << "update:" << (double)(time_end - time_start) / CLOCKS_PER_SEC << "[sec]" << endl;
 
-//	mTexture = gl::Texture(fromOcv(input1));
+	//	mTexture = gl::Texture(fromOcv(input1));
 }
 
 void ProjectionMapping2App::draw()
@@ -714,7 +721,7 @@ void ProjectionMapping2App::draw()
 			}
 		}
 		gl::popMatrices();
-		
+
 		console() << "mat_ambient: " << mat_ambient[0] << endl;;
 
 	}
@@ -762,7 +769,7 @@ void ProjectionMapping2App::draw()
 
 	/*TurnCube*/
 	else if (sw == 4){
-//		reload();
+		//		reload();
 		// clear out the window with black
 		gl::clear(Color(0, 0, 0));
 		if (!TurnCube_mTexture)
@@ -814,15 +821,15 @@ void ProjectionMapping2App::draw()
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		for (int i = 0; i < Shabon_N; i++){
-			if (Shabon_kyu[i][0][0] >= 271 && Shabon_kyu[i][0][0] <= 422 && Shabon_kyu[i][0][1] >= 148 && Shabon_kyu[i][0][1] <= 301){
-				gl::color(Color(CM_HSV,Shabon_kyu[i][2][0], Shabon_kyu[i][2][1], Shabon_kyu[i][2][2]));
+			if (Shabon_kyu[i][0][0] >= P1 && Shabon_kyu[i][0][0] <= P2 && Shabon_kyu[i][0][1] >= P3 && Shabon_kyu[i][0][1] <= P4){
+				gl::color(Color(CM_HSV, Shabon_kyu[i][2][0], Shabon_kyu[i][2][1], Shabon_kyu[i][2][2]));
 				//gl::color(Shabon_kyu[i][2][0], Shabon_kyu[i][2][1], Shabon_kyu[i][2][2]);
 				gl::drawSolidCircle(ci::Vec2f(Shabon_kyu[i][0][0], Shabon_kyu[i][0][1]), 8, -1);
 			}
 			else{
 				//座標
-				Shabon_kyu[i][0][0] = randFloat(271, 422);
-				Shabon_kyu[i][0][1] = randFloat(148, 301);
+				Shabon_kyu[i][0][0] = randFloat(P1, P2);
+				Shabon_kyu[i][0][1] = randFloat(P3, P4);
 				//色
 				Shabon_kyu[i][2][0] = randFloat(0, 1);
 				Shabon_kyu[i][2][1] = randFloat(0.4, 1);
@@ -930,13 +937,6 @@ void ProjectionMapping2App::draw()
 	/*soul*/
 	else if (sw == 8){
 		gl::clear(Color(0, 0, 0));
-
-		/*light off*/
-		glDisable(GL_LIGHTING);
-		glDisable(GL_LIGHT0);
-		glDisable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 		if (soul_input[0]>xyLeftUp[0] && soul_input[0]<xyRightDown[0] && soul_input[1]>xyLeftUp[1] && soul_input[1]<xyRightDown[1]){	//マウスカーソルが窓内にあるとき
 			soul_INorOUT = 1;
 			soul_f = 0;
@@ -959,7 +959,7 @@ void ProjectionMapping2App::draw()
 			//i = 0;
 		}
 		else{
-			if (soul_INorOUT == 1){ soul_PosX = 271; soul_PosY = 148; }
+			if (soul_INorOUT == 1){ soul_PosX = xyLeftUp[0]; soul_PosY = xyLeftUp[1]; }
 			soul_INorOUT = 2;
 			DrawGaussian();
 		}
@@ -967,6 +967,10 @@ void ProjectionMapping2App::draw()
 	//time_end = clock();
 	//console() << "draw:" << (double)(time_end - time_start) / CLOCKS_PER_SEC << "[sec]" << endl;
 
+
+	InputXY[0] = x; InputXY[1] = y;
+	gl::color(255, 0, 0);
+	gl::drawSolidCircle(InputXY, 5);
 }
 
 void ProjectionMapping2App::drawGrid(float size, float step)
@@ -1088,7 +1092,7 @@ void ProjectionMapping2App::resetup(int re_sw){
 			fireColor[i][1] = 255;
 			fireColor[i][2] = (i - 64) * 4;
 		}
-//		setWindowSize(1000, 800);
+		//		setWindowSize(1000, 800);
 		mSeed = clock() & 65535;
 		mOctaves = 4;
 		mTime = 0.0f;
@@ -1138,8 +1142,8 @@ void ProjectionMapping2App::resetup(int re_sw){
 		setWindowSize(1000, 800);
 		//座標の設定
 		for (int i = 0; i < Shabon_N; i++){
-			Shabon_kyu[i][0][0] = randFloat(272, 421);
-			Shabon_kyu[i][0][1] = randFloat(149, 300);
+			Shabon_kyu[i][0][0] = randFloat(P1, P2);
+			Shabon_kyu[i][0][1] = randFloat(P3, P4);
 			Shabon_kyu[i][0][2] = 0;
 			//初期速度と色情報
 			for (int j = 0; j < 3; j++){
@@ -1203,13 +1207,13 @@ void ProjectionMapping2App::resetup(int re_sw){
 	/*soul*/
 	else if (re_sw == 8){
 		gl::clear(Color(0, 0, 0));
-		soul_Pos[0] = 271;		soul_Pos[1] = 148;
-		xyLeftUp[0] = 271;		xyLeftUp[1] = 148;
-		xyRightDown[0] = 442;	xyRightDown[1] = 301;
+		xyLeftUp[0] = P1;		xyLeftUp[1] = P3;
+		xyRightDown[0] = P2;	xyRightDown[1] = P4;
+		soul_PosX = xyLeftUp[0]; soul_PosY = xyLeftUp[1];
 	}
 
 	time_start = clock();
 
 }
 
-CINDER_APP_NATIVE( ProjectionMapping2App, RendererGl )
+CINDER_APP_NATIVE(ProjectionMapping2App, RendererGl)
