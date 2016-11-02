@@ -160,7 +160,7 @@ public:
 	std::random_device rnd;
 
 	/*TurnCube*/
-	//	void reload();
+	void reload();
 	void fileDrop(FileDropEvent event);
 
 	gl::Texture TurnCube_mTexture;
@@ -253,7 +253,7 @@ void ProjectionMapping2App::setup()
 		console() << "Failed to initialize capture" << std::endl;
 	}
 
-	sw = 8;		//1:BasicApp, 2:fireApp, 3:PenkiApp, 4:TurnCube, 5:Shabon, 6:window, 7:movie, 8:soul
+	sw = 3;		//1:BasicApp, 2:fireApp, 3:PenkiApp, 4:TurnCube, 5:Shabon, 6:window, 7:movie, 8:soul
 	avi = 3;	//movie 3:openingMovie.mp4
 
 	resetup(sw);
@@ -277,7 +277,7 @@ void ProjectionMapping2App::update()
 
 	console() << "time:" << (double)(time_end - time_start) / CLOCKS_PER_SEC << "[sec]" << endl;
 
-	if (ch_time > 5555.0){
+	if (ch_time > 5.0){
 		sw++;
 		if (sw > 8) sw = 1;
 		resetup(sw);
@@ -776,13 +776,13 @@ void ProjectionMapping2App::draw()
 
 	/*TurnCube*/
 	else if (sw == 4){
-		//		reload();
+		reload();
 		// clear out the window with black
 		gl::clear(Color(0, 0, 0));
 		if (!TurnCube_mTexture)
 			return;
 
-		gl::setMatrices(mMayaCam.getCamera());
+		//gl::setMatrices(mMayaCam.getCamera());
 
 		/*light on*/
 		glEnable(GL_LIGHTING);
@@ -806,9 +806,9 @@ void ProjectionMapping2App::draw()
 
 		TurnCube_mTexture.bind();
 		glPushMatrix();
-		//if (TurnCube_speed != 0){
-		//	gl::multModelView(TurnCube_mCubeRotation);
-		//}
+		if (TurnCube_speed != 0){
+			gl::multModelView(TurnCube_mCubeRotation);
+		}
 
 		gl::drawCube(ci::Vec3f(0, 0, 0), ci::Vec3f(120 * 0.454, 100 * 0.454, 0.05f));
 		glPopMatrix();
@@ -987,14 +987,14 @@ void ProjectionMapping2App::drawGrid(float size, float step)
 	}
 }
 
-//void ProjectionMapping2App::reload()
-//{
-//	// now tell our Camera that the window aspect ratio has changed
-//	cam.setPerspective(60, getWindowAspectRatio(), 1, 1000);
-//
-//	// and in turn, let OpenGL know we have a new camera
-//	gl::setMatrices(cam);
-//}
+void ProjectionMapping2App::reload()
+{
+	// now tell our Camera that the window aspect ratio has changed
+	cam.setPerspective(60, getWindowAspectRatio(), 1, 1000);
+
+	// and in turn, let OpenGL know we have a new camera
+	gl::setMatrices(cam);
+}
 
 void ProjectionMapping2App::fileDrop(FileDropEvent event)
 {
