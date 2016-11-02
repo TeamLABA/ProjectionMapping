@@ -1,3 +1,10 @@
+/*プログラム変更時の注意事項
+変更しない行は変化を与えないように！！
+つまり、インデントの変更や空白文字の追加を行わないように！！
+他人が見たとき差分がわかりにくくなります
+また、プッシュ時のコメントには、変更点を記述するだけではなく、
+変更した目的も記述するようにしてください*/
+
 /*camera_ctApp*/
 #include "cinder/app/AppNative.h"
 #include "cinder/gl/gl.h"
@@ -811,8 +818,6 @@ void ProjectionMapping2App::draw()
 	else if (sw == 5){
 		// clear out the window with black
 		gl::clear(Color(0, 0, 0));
-
-		gl::color(1, 1, 1);
 
 		/*light off*/
 		glDisable(GL_LIGHTING);
