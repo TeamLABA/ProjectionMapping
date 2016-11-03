@@ -106,10 +106,17 @@ int P2 = 640 + 225 + 5;	//442
 int P3 = 400 - 260 - 3;	//148
 int P4 = 400 + 220 - 3;	//301
 
+/*Debug mode: true -> debag mode*/
+/*カメラがない場合はtrueにして実行してください*/
+bool debag = true;
+
+/*切り替えるスイッチの数*/
+const int sw_num = 8;
+
 class ProjectionMapping2App : public AppNative {
 public:
 	void setup();
-	void mouseDown(MouseEvent event);
+	void mouseDrag(MouseEvent event);
 	void update();
 	void draw();
 	void resetup(int re_sw);
@@ -123,7 +130,6 @@ public:
 	/*camera_ctApp*/
 	Capture mCap;
 	int cnt;
-	int mouseX, mouseY;
 	int px1, py1, px2, py2;
 	vector< vector<Point> > contours;
 	Mat hsv_image, mask_image;
@@ -239,21 +245,26 @@ public:
 
 void ProjectionMapping2App::setup()
 {
-	/*camera_ctApp*/
-	cnt = 0;
-	px1 = 393;	//x
-	py1 = 140;	//y
-	px2 = 882;	//x1
-	py2 = 633;	//y1
-	try{
-		mCap = Capture(640, 480);
-		mCap.start();
-	}
-	catch (...) {
-		console() << "Failed to initialize capture" << std::endl;
+	/*init*/
+	x = y = 0;
+
+	if (!debag){
+		/*camera_ctApp*/
+		cnt = 0;
+		px1 = 393;	//x
+		py1 = 140;	//y
+		px2 = 882;	//x1
+		py2 = 633;	//y1
+		try{
+			mCap = Capture(640, 480);
+			mCap.start();
+		}
+		catch (...) {
+			console() << "Failed to initialize capture" << std::endl;
+		}
 	}
 
-	sw = 3;		//1:BasicApp, 2:fireApp, 3:PenkiApp, 4:TurnCube, 5:Shabon, 6:window, 7:movie, 8:soul
+	sw = 3;		//1:BasicApp, 2:fireApp, 3:PenkiApp, 4:TurnCube, 5:Shabon, 6:window, 7:movie, 0:soul
 	avi = 3;	//movie 3:openingMovie.mp4
 
 	resetup(sw);
@@ -261,11 +272,13 @@ void ProjectionMapping2App::setup()
 
 }
 
-void ProjectionMapping2App::mouseDown(MouseEvent event)
+void ProjectionMapping2App::mouseDrag(MouseEvent event)
 {
-	mouseX = event.getX();
-	mouseY = event.getY();
-	console() << mouseX << "," << mouseY << endl;
+	if (debag){
+		x = event.getX();
+		y = event.getY();
+		console() << x << "," << y << endl;
+	}
 }
 
 void ProjectionMapping2App::update()
@@ -278,32 +291,33 @@ void ProjectionMapping2App::update()
 	console() << "time:" << (double)(time_end - time_start) / CLOCKS_PER_SEC << "[sec]" << endl;
 
 	if (ch_time > 5.0){
-		sw++;
-		if (sw > 8) sw = 1;
-		resetup(sw);
+		resetup(++sw%sw_num);
 	}
 
-	/*camera_ctApp*/
-	Mat input1(toOcv(mCap.getSurface()));
-	cvtColor(input1, hsv_image, CV_BGR2HSV);
-	inRange(hsv_image, Scalar(30, 100, 30), Scalar(40, 255, 255), mask_image);
-	cv::erode(mask_image, erode, cv::Mat(), Point(-1, -1), 2);
-	cv::dilate(erode, dilate, cv::Mat(), Point(-1, -1), 4);
+	if (!debag){
+		/*camera_ctApp*/
+		Mat input1(toOcv(mCap.getSurface()));
+		cvtColor(input1, hsv_image, CV_BGR2HSV);
+		inRange(hsv_image, Scalar(30, 100, 30), Scalar(40, 255, 255), mask_image);
+		cv::erode(mask_image, erode, cv::Mat(), Point(-1, -1), 2);
+		cv::dilate(erode, dilate, cv::Mat(), Point(-1, -1), 4);
 
-	cv::findContours(dilate, contours, CV_RETR_LIST, CV_CHAIN_APPROX_NONE);
+		cv::findContours(dilate, contours, CV_RETR_LIST, CV_CHAIN_APPROX_NONE);
+
 
 #pragma omp parallel
-	{
+		{
 #pragma omp ss
-		for (int i = 0; i < contours.size(); i++){
-			count = contours.at(i).size();
-			x = 0.0; y = 0.0;
-			for (int j = 0; j < count; j++){
-				x += contours.at(i).at(j).x;
-				y += contours.at(i).at(j).y;
+			for (int i = 0; i < contours.size(); i++){
+				count = contours.at(i).size();
+				x = 0.0; y = 0.0;
+				for (int j = 0; j < count; j++){
+					x += contours.at(i).at(j).x;
+					y += contours.at(i).at(j).y;
+				}
+				x /= count;
+				y /= count;
 			}
-			x /= count;
-			y /= count;
 		}
 	}
 
@@ -618,12 +632,12 @@ void ProjectionMapping2App::update()
 
 	/*soul*/
 	if (x > px1 && y > py1 && x < px2 && y < py2){
-		if (sw == 8){
+		if (sw == 0){
 			soul_x = x;
 			soul_y = y;
 		}
 	}
-	if (sw == 8){
+	if (sw == 0){
 		soul_input[0] = soul_x;	soul_input[1] = soul_y;
 		if (soul_PosX == xyLeftUp[0] && soul_PosY == xyLeftUp[1]){
 			soul_Count = xyRightDown[0] - xyLeftUp[0] + 1;
@@ -940,7 +954,7 @@ void ProjectionMapping2App::draw()
 	}
 
 	/*soul*/
-	else if (sw == 8){
+	else if (sw == 0){
 		gl::clear(Color(0, 0, 0));
 		if (soul_input[0]>xyLeftUp[0] && soul_input[0]<xyRightDown[0] && soul_input[1]>xyLeftUp[1] && soul_input[1]<xyRightDown[1]){	//マウスカーソルが窓内にあるとき
 			soul_INorOUT = 1;
@@ -1210,7 +1224,7 @@ void ProjectionMapping2App::resetup(int re_sw){
 	}
 
 	/*soul*/
-	else if (re_sw == 8){
+	else if (re_sw == 0){
 		gl::clear(Color(0, 0, 0));
 		xyLeftUp[0] = P1;		xyLeftUp[1] = P3;
 		xyRightDown[0] = P2;	xyRightDown[1] = P4;
