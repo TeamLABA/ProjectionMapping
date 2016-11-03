@@ -140,7 +140,7 @@ public:
 	vector< vector<Point> > contours;
 	Mat hsv_image, mask_image;
 	Mat erode, dilate;
-	double x, y;
+	double x, y,x_buff,y_buff;
 	int count;
 	int sw;
 
@@ -273,7 +273,7 @@ void ProjectionMapping2App::setup()
 	}
 
 
-	sw = 2;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
+	sw = 0;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
 	avi = 3;	//movie 3:openingMovie.mp4
 
 	resetup(sw);
@@ -282,9 +282,9 @@ void ProjectionMapping2App::setup()
 void ProjectionMapping2App::mouseDrag(MouseEvent event)
 {
 	if (debag){
-		x = event.getX();
-		y = event.getY();
-		console() << x << "," << y << endl;
+		x = event.getX()*2;
+		y = event.getY()*2.6667;
+		console() << x/6 << "," << y/6 << endl;
 	}
 }
 
@@ -295,9 +295,9 @@ void ProjectionMapping2App::update()
 	clock_time = time_end - time_start;
 	ch_time = clock_time / CLOCKS_PER_SEC;
 
-	console() << "time:" << (double)(time_end - time_start) / CLOCKS_PER_SEC << "[sec]" << endl;
+	//console() << "time:" << (double)(time_end - time_start) / CLOCKS_PER_SEC << "[sec]" << endl;
 
-	if (ch_time > 10.0){
+	if (ch_time > 100.0){
 		resetup(++sw%sw_num);
 	}
 
@@ -312,30 +312,35 @@ void ProjectionMapping2App::update()
 
 		cv::findContours(dilate, contours, CV_RETR_LIST, CV_CHAIN_APPROX_NONE);
 
+		x = 0.0; y = 0.0;
 
 #pragma omp parallel
 		{
 #pragma omp ss
 			for (int i = 0; i < contours.size(); i++){
 				count = contours.at(i).size();
-				x = 0.0; y = 0.0;
+				x_buff = 0.0; y_buff = 0.0;
 				for (int j = 0; j < count; j++){
-					x += contours.at(i).at(j).x;
-					y += contours.at(i).at(j).y;
+					x_buff += contours.at(i).at(j).x;
+					y_buff += contours.at(i).at(j).y;
 				}
-				x /= count;
-				y /= count;
+				x += x_buff / count;
+				y += y_buff / count;
 			}
 		}
 	}
+	x /= contours.size();
+	y /= contours.size();
 
 	//ˆÊ’u‡‚í‚¹Ï	//BasicApp(0,+150),penki(+350,+250),shabon(+350,+250),soul(+350,+250)
-	if (sw==6 || sw==4 || sw==5){
-		x = x + 350;
-		y = y + 250;
-	}
-	else if (sw==1){
-		y = y + 150;
+	if (!debag){
+		if (sw == 6 || sw == 4 || sw == 5){
+			x = x + 350;
+			y = y + 250;
+		}
+		else if (sw == 1){
+			y = y + 150;
+		}
 	}
 
 	//time_end = clock();
@@ -356,7 +361,7 @@ void ProjectionMapping2App::update()
 						for (int i = -2; i <= 2; i++){
 							for (int j = -2; j <= 2; j++){
 								BasicApp_pos[0][x1 + i][y1 + j] = 50 - BasicApp_N / 5;
-								cout << "x:" << x1 << "y:" << y1 << endl;
+								//cout << "x:" << x1 << "y:" << y1 << endl;
 							}
 						}
 					}
@@ -763,7 +768,7 @@ void ProjectionMapping2App::draw()
 		}
 		gl::popMatrices();
 
-		console() << "mat_ambient: " << mat_ambient[0] << endl;;
+		//console() << "mat_ambient: " << mat_ambient[0] << endl;;
 
 	}
 
@@ -1096,7 +1101,7 @@ void ProjectionMapping2App::resetup(int re_sw){
 		mMayaCam.setCurrentCam(cam);
 
 		//set window size
-		setWindowSize(1000, 800);
+		//setWindowSize(1000, 800);
 
 		DIFFUSE = true;
 		AMBIENT = true;
@@ -1175,7 +1180,7 @@ void ProjectionMapping2App::resetup(int re_sw){
 		cam.setPerspective(60.0f, getWindowAspectRatio(), 1.0f, 200.0f);
 		mMayaCam.setCurrentCam(cam);
 
-		setWindowSize(1000, 800);
+		//setWindowSize(1000, 800);
 		glEnable(GL_TEXTURE_2D);
 		gl::enableDepthRead();
 		gl::enableDepthWrite();
@@ -1183,7 +1188,7 @@ void ProjectionMapping2App::resetup(int re_sw){
 
 	/*Shabon:4*/
 	else if (re_sw == 4){
-		setWindowSize(1000, 800);
+		//setWindowSize(1000, 800);
 		//À•W‚ÌÝ’è
 		for (int i = 0; i < Shabon_N; i++){
 			Shabon_kyu[i][0][0] = randFloat((float)P1, (float)P2);
@@ -1211,7 +1216,7 @@ void ProjectionMapping2App::resetup(int re_sw){
 			loadMovieFile(a_moviePath);
 
 		//set window size
-		setWindowSize(1280, 800);
+		//setWindowSize(1280, 800);
 
 		window_DIFFUSE = true;
 		window_AMBIENT = true;
