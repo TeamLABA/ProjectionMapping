@@ -62,15 +62,18 @@ GLfloat mat_specular[] = { (GLfloat)1.0, (GLfloat)1.0, (GLfloat)1.0, (GLfloat)1.
 GLfloat mat_emission[] = { (GLfloat)0.0, (GLfloat)0.1, (GLfloat)0.3, (GLfloat)0.0 };
 GLfloat mat_shininess[] = { 128.0 };
 GLfloat no_shininess[] = { 0.0 };
-const int BasicApp_N = 70; //100
+const int BasicApp_N = 107; //100
+const int BasicApp_N2 = 85;	//位置合わせ用
 
 /*fireApp*/
 const int fireApp_buff = 100;
 const float fireApp_a = (const float)0.1;
-const float fireApp_XY[2] = { 271, 148 };
+const float fireApp_XY[2] = { 640 - 170 * 2.5 *1.1/ 2 + 5/*271*/, 400 - 170 * 2.5*1.1 / 2 - 3 - 120 /*148*/ };
 //const float XY[2] = { 271, 148 };
 //const float XY[2] = { 259, 76 };
-const int fireApp_N = 170;
+const int fireApp_N = 170*2.5*1.1;
+
+//位置合わせしたけど動かなくなりました_fire
 
 /*TurnCube*/
 GLfloat TurnCube_no_mat[] = { 1.0, 1.0, 1.0, 1.0 };
@@ -165,11 +168,13 @@ public:
 	int fireApp_x, fireApp_y;
 	int fireApp_circle;
 
+
 	/*PenkiApp*/
 	std::random_device rnd;
 
 	/*TurnCube*/
 	void reload();
+
 	void fileDrop(FileDropEvent event);
 
 	gl::Texture TurnCube_mTexture;
@@ -227,7 +232,7 @@ public:
 
 	//protected:
 	/*BasicApp*/
-	float BasicApp_pos[2][BasicApp_N][BasicApp_N];
+	float BasicApp_pos[2][BasicApp_N2][BasicApp_N];
 	MayaCamUI mMayaCam;
 	CameraPersp cam;
 
@@ -267,6 +272,7 @@ void ProjectionMapping2App::setup()
 		}
 	}
 
+
 	sw = 2;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
 	avi = 3;	//movie 3:openingMovie.mp4
 
@@ -296,6 +302,7 @@ void ProjectionMapping2App::update()
 		resetup(++sw%sw_num);
 	}
 
+
 	if (!debag){
 		/*camera_ctApp*/
 		Mat input1(toOcv(mCap.getSurface()));
@@ -323,6 +330,15 @@ void ProjectionMapping2App::update()
 		}
 	}
 
+	//位置合わせ済	//BasicApp(0,+150),penki(+350,+250),shabon(+350,+250),soul(+350,+250)
+	if (sw==6 || sw==4 || sw==5){
+		x = x + 350;
+		y = y + 250;
+	}
+	else if (sw==1){
+		y = y + 150;
+	}
+
 	//time_end = clock();
 	//console() << "cam:"<<(double)(time_end - time_start) / CLOCKS_PER_SEC <<"[sec]"<< endl;
 	//time_start = clock();
@@ -330,9 +346,11 @@ void ProjectionMapping2App::update()
 	/*BasicApp*/
 	if (x > px1 && y > py1 && x < px2 && y < py2){
 		if (sw == 1){
+
 			int x1 = (int)(x / 6);
 			int y1 = (int)(y / 6);
 			if (x1 > 2 && x1 < BasicApp_N - 3 && y1 > 2 && y1 < BasicApp_N - 3){
+
 #pragma omp parallel
 					{
 #pragma omp ss
@@ -349,7 +367,7 @@ void ProjectionMapping2App::update()
 	if (sw == 1){
 		//random wave
 		if (wave % 3 == 0){
-			int rndX = randInt(5, BasicApp_N - 5);
+			int rndX = randInt(5, BasicApp_N2 - 5);
 			int rndY = randInt(5, BasicApp_N - 5);
 #pragma omp parallel
 			{
@@ -367,9 +385,9 @@ void ProjectionMapping2App::update()
 #pragma omp parallel
 		{
 #pragma omp for
-			for (int i = 1; i < BasicApp_N - 1; i++){
+			for (int i = 1; i < BasicApp_N2 - 1; i++){
 				for (int j = 1; j < BasicApp_N - 1; j++){
-					BasicApp_pos[1][i][j] = (float)((BasicApp_pos[0][i - 1][j] + BasicApp_pos[0][i + 1][j] + BasicApp_pos[0][i][j - 1] + BasicApp_pos[0][i][j + 1] - 200) / 4 - (BasicApp_pos[0][i][j] - 50)) + (float)(BasicApp_pos[1][i][j] * 0.9);
+					BasicApp_pos[1][i][j] = (float)((BasicApp_pos[0][i - 1][j] + BasicApp_pos[0][i + 1][j] + BasicApp_pos[0][i][j - 1] + BasicApp_pos[0][i][j + 1] - 200) / 4 - (BasicApp_pos[0][i][j] - 50)) + BasicApp_pos[1][i][j] * 0.9;
 					if (BasicApp_pos[1][i][j]>20){
 						BasicApp_pos[1][i][j] = 20;
 					}
@@ -382,7 +400,7 @@ void ProjectionMapping2App::update()
 #pragma omp parallel
 			{
 #pragma omp for
-				for (int i = 1; i < BasicApp_N - 1; i++){
+				for (int i = 1; i < BasicApp_N2 - 1; i++){
 					for (int j = 1; j < BasicApp_N - 1; j++){
 						BasicApp_pos[0][i][j] += BasicApp_pos[1][i][j];
 						//mesh.appendVertex(Vec3f(i, pos[0][i][j], j));
@@ -610,6 +628,7 @@ void ProjectionMapping2App::update()
 			window_flag = 1;
 		}
 	}
+
 	if (sw == 2){
 		window_r += window_flag * 2;
 		if (window_r > 125){
@@ -723,7 +742,7 @@ void ProjectionMapping2App::draw()
 #pragma omp parallel
 		{
 #pragma omp for
-			for (int i = 0; i < BasicApp_N - 1; i++){
+			for (int i = 0; i < BasicApp_N2 - 1; i++){
 				for (int j = 0; j < BasicApp_N - 1; j++){
 					mesh.appendVertex(ci::Vec3f((float)i, BasicApp_pos[0][i][j], (float)j));
 					mesh.appendColorRgb(Color(0.3f, 0.3f, 1));
@@ -767,7 +786,7 @@ void ProjectionMapping2App::draw()
 			for (int i = 0; i < fireApp_N + fireApp_buff; i += 2){
 				for (int j = 0; j < fireApp_N; j += 2){
 					gl::color(fireColor[fireApp_pos[i][j]][0] * (1 - fireApp_a) + smokePos[i][j] * fireApp_a, fireColor[fireApp_pos[i][j]][1] * (1 - fireApp_a) + smokePos[i][j] * fireApp_a, fireColor[fireApp_pos[i][j]][2] * (1 - fireApp_a) + smokePos[i][j] * fireApp_a);
-					gl::drawSolidEllipse(ci::Vec2d(fireApp_XY[0] + j, fireApp_XY[1] + i), 3.0, 3.0);
+					gl::drawSolidEllipse(ci::Vec2d(fireApp_XY[0] + j, fireApp_XY[1] + i), 1.0, 1.0);
 				}
 			}
 		}
@@ -793,6 +812,7 @@ void ProjectionMapping2App::draw()
 	/*TurnCube:3*/
 	else if (sw == 3){
 		reload();
+
 		// clear out the window with black
 		gl::clear(Color(0, 0, 0));
 		if (!TurnCube_mTexture)
@@ -851,6 +871,7 @@ void ProjectionMapping2App::draw()
 				//座標
 				Shabon_kyu[i][0][0] = randFloat((float)P1, (float)P2);
 				Shabon_kyu[i][0][1] = randFloat((float)P3, (float)P4);
+
 				//色
 				Shabon_kyu[i][2][0] = randFloat((float)0, (float)1);
 				Shabon_kyu[i][2][1] = randFloat((float)0.4, (float)1);
@@ -991,8 +1012,8 @@ void ProjectionMapping2App::draw()
 	//time_end = clock();
 	//console() << "draw:" << (double)(time_end - time_start) / CLOCKS_PER_SEC << "[sec]" << endl;
 
-	InputXY[0] = (float)x;
-	InputXY[1] = (float)y;
+
+InputXY[0] = (float)(x + 320); InputXY[1] = (float)(y + 230);
 	gl::color(255, 0, 0);
 	gl::drawSolidCircle(InputXY, 5);
 }
@@ -1070,8 +1091,8 @@ void ProjectionMapping2App::resetup(int re_sw){
 	/*BasicApp*/
 	if (re_sw == 1){
 		//set up the camera
-		cam.setEyePoint(ci::Vec3f(BasicApp_N / 2, 200, BasicApp_N / 2));
-		cam.setCenterOfInterestPoint(ci::Vec3f(BasicApp_N / 2, 0.0f, BasicApp_N / 2));
+		cam.setEyePoint(ci::Vec3f(BasicApp_N2 / 2, 200, BasicApp_N / 2));
+		cam.setCenterOfInterestPoint(ci::Vec3f(BasicApp_N2 / 2, 0.0f, BasicApp_N / 2));
 		cam.setPerspective(60.0f, getWindowAspectRatio(), 1.0f, 200.0f);
 		mMayaCam.setCurrentCam(cam);
 
@@ -1085,13 +1106,13 @@ void ProjectionMapping2App::resetup(int re_sw){
 
 		//init
 		for (int i = 0; i < 1; i++){
-			for (int j = 0; j < BasicApp_N; j++){
+			for (int j = 0; j < BasicApp_N2; j++){
 				for (int k = 0; k < BasicApp_N; k++){
 					BasicApp_pos[i][j][k] = 50;
 				}
 			}
 		}
-		for (int j = 0; j < BasicApp_N; j++){
+		for (int j = 0; j < BasicApp_N2; j++){
 			for (int k = 0; k < BasicApp_N; k++){
 				BasicApp_pos[1][j][k] = 0;
 			}
