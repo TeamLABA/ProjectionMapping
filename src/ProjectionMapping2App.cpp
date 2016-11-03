@@ -98,7 +98,7 @@ GLfloat window_no_shininess[] = { 0.0 };
 
 GLfloat window_index[10][3] = { { 0 - 6, 320, 240 }, { 155 - 6, 320, 5 }, { 315 - 6, 320, 240 }, { 155 - 6, 320, 475 }, { 155 - 6, 320, 240 }, { 155 - 6, 320, 240 }, { 75 - 6, 320, 240 }, { 155 - 6, 320, 120 }, { 235 - 6, 320, 240 }, { 155 - 6, 320, 360 } };
 GLfloat window_size[2][3] = { { 10, 10, 480 }, { 320, 10, 10 } };
-const int window_movie_size[2][2] = { { 0, 0 }, { 1200, 880 } };
+const int movie_size[2][2] = { { 0, 0 }, { 1200, 880 } };
 const int window_N = 100;
 
 clock_t time_start, time_end;
@@ -206,8 +206,6 @@ public:
 	double window_r;
 	int window_flag;
 	int window_cnt;
-	qtime::MovieSurface	window_movie;
-	Surface				window_mSurface;
 
 	/*movie*/
 	int avi;
@@ -274,7 +272,7 @@ void ProjectionMapping2App::setup()
 
 
 	sw = 0;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
-	avi = 3;	//movie 3:openingMovie.mp4
+	avi = 2;	//movie 3:openingMovie.mp4
 
 	resetup(sw);
 }
@@ -646,8 +644,8 @@ void ProjectionMapping2App::update()
 		if (window_r < 0)
 			window_flag = 0;
 
-		if (window_movie)
-			window_mSurface = window_movie.getSurface();
+		if (movie)
+			movie_mSurface = movie.getSurface();
 	}
 	/*movie*/
 	if (sw == 7){
@@ -915,17 +913,17 @@ void ProjectionMapping2App::draw()
 
 		glMaterialfv(GL_FRONT, GL_EMISSION, window_mat_emission);
 
-		Rectf bounds((float)window_movie_size[0][0], (float)window_movie_size[0][1], (float)window_movie_size[1][0], (float)window_movie_size[1][1]); //movie size
+		Rectf bounds((float)movie_size[0][0], (float)movie_size[0][1], (float)movie_size[1][0], (float)movie_size[1][1]); //movie size
 		gl::enableAlphaBlending(true);
 
-		if ((!window_movie) || (!window_mSurface))
+		if ((!movie) || (!movie_mSurface))
 			return;
 
 		// We are using OpenGL to draw the frames here, so we'll make a texture out of the surface
 		glPushMatrix();
 		glTranslated(-270, 10, -200);
 		glRotated(90, 1, 0, 0);
-		gl::draw(gl::Texture(window_mSurface), bounds);
+		gl::draw(gl::Texture(movie_mSurface), bounds);
 		glPopMatrix();
 		gl::color(109 / 256.0f, 60 / 256.0f, 50 / 256.0f, 0.5f);
 
@@ -963,21 +961,50 @@ void ProjectionMapping2App::draw()
 
 	/*movie:7*/
 	else if (sw == 7){
-		//gl::pushMatrices();
+		/*light on*/
+		glEnable(GL_LIGHTING);
+		glEnable(GL_LIGHT0);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		// gray background
+		gl::clear(Colorf(0, 0, 0));
+		GLfloat light_position[] = { 500, 0.0f, 100.0f, 0.0f };
+		glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+
+		// set up the camera 
+		gl::pushMatrices();
 		gl::setMatrices(mMayaCam.getCamera());
 
-		Rectf bounds((float)window_movie_size[0][0], (float)window_movie_size[0][1], (float)window_movie_size[1][0], (float)window_movie_size[1][1]);
+		// enable the depth buffer (after all, we are doing 3D)
+		gl::enableDepthRead();
+		gl::enableDepthWrite();
+
+		/*light set*/
+		ci::ColorA color(CM_HSV, 0.7f, 0.8f, 1.0f, 1.0f);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, color);
+
+		glMaterialfv(GL_FRONT, GL_AMBIENT, window_mat_ambient);
+
+		glMaterialfv(GL_FRONT, GL_SPECULAR, window_mat_specular);
+		glMaterialfv(GL_FRONT, GL_SHININESS, window_mat_shininess);
+
+		glMaterialfv(GL_FRONT, GL_EMISSION, window_mat_emission);
+
+		Rectf bounds((float)movie_size[0][0], (float)movie_size[0][1], (float)movie_size[1][0], (float)movie_size[1][1]); //movie size
 		gl::enableAlphaBlending(true);
 
-		if ((!movie) || (!movie_mSurface))
+		if ((!movie) || (!movie_mSurface)){
+			console() << "err" << endl;
 			return;
+		}
 
+		// We are using OpenGL to draw the frames here, so we'll make a texture out of the surface
 		glPushMatrix();
 		glTranslated(-270, 10, -200);
 		glRotated(90, 1, 0, 0);
 		gl::draw(gl::Texture(movie_mSurface), bounds);
 		glPopMatrix();
-		gl::color(109 / 256.0f, 60 / 256.0f, 50 / 256.0f, 0.5f);
 	}
 
 	/*soul:5*/
@@ -1053,17 +1080,17 @@ void ProjectionMapping2App::fileDrop(FileDropEvent event)
 void ProjectionMapping2App::loadMovieFile(const fs::path &moviePath)
 {
 	try {
-		window_movie = qtime::MovieSurface(moviePath);
+		movie = qtime::MovieSurface(moviePath);
 
-		console() << "Dimensions:" << window_movie.getWidth() << " x " << window_movie.getHeight() << std::endl;
-		console() << "Duration:  " << window_movie.getDuration() << " seconds" << std::endl;
-		console() << "Frames:    " << window_movie.getNumFrames() << std::endl;
-		console() << "Framerate: " << window_movie.getFramerate() << std::endl;
-		console() << "Alpha channel: " << window_movie.hasAlpha() << std::endl;
-		console() << "Has audio: " << window_movie.hasAudio() << " Has visuals: " << window_movie.hasVisuals() << std::endl;
-		window_movie.setLoop(true, true);
-		window_movie.seekToStart();
-		window_movie.play();
+		console() << "Dimensions:" << movie.getWidth() << " x " << movie.getHeight() << std::endl;
+		console() << "Duration:  " << movie.getDuration() << " seconds" << std::endl;
+		console() << "Frames:    " << movie.getNumFrames() << std::endl;
+		console() << "Framerate: " << movie.getFramerate() << std::endl;
+		console() << "Alpha channel: " << movie.hasAlpha() << std::endl;
+		console() << "Has audio: " << movie.hasAudio() << " Has visuals: " << movie.hasVisuals() << std::endl;
+		movie.setLoop(true, true);
+		movie.seekToStart();
+		movie.play();
 	}
 	catch (...) {
 		console() << "Unable to load the movie." << std::endl;
@@ -1211,7 +1238,7 @@ void ProjectionMapping2App::resetup(int re_sw){
 		cam.setPerspective(80.0f, getWindowAspectRatio(), 1.0f, 700.0f);
 		mMayaCam.setCurrentCam(cam);
 
-		fs::path a_moviePath("C:\\cinder_0.8.6_vc2013\\project\\ProjectionMapping2\\resources\\MeditationVideo.mp4");
+		fs::path a_moviePath("C:\\cinder_0.8.6_vc2013\\projects\\ProjectionMapping\\resources\\MeditationVideo.mp4");
 		if (!a_moviePath.empty())
 			loadMovieFile(a_moviePath);
 
@@ -1237,20 +1264,25 @@ void ProjectionMapping2App::resetup(int re_sw){
 		mMayaCam.setCurrentCam(cam);
 
 		if (avi == 1){
-			fs::path avi_moviePath("C:\\cinder_0.8.6_vc2013\\project\\ProjectionMapping2\\resources\\fire_water.avi");
+			fs::path avi_moviePath("C:\\cinder_0.8.6_vc2013\\projects\\ProjectionMapping\\resources\\fire_water.avi");
 			if (!avi_moviePath.empty())
 				loadMovieFile(avi_moviePath);
 		}
 		else if (avi == 2){
-			fs::path avi_moviePath("C:\\cinder_0.8.6_vc2013\\project\\ProjectionMapping2\\resources\\water_window.avi");
+			fs::path avi_moviePath("C:\\cinder_0.8.6_vc2013\\projects\\ProjectionMapping\\resources\\water_window.mp4");
 			if (!avi_moviePath.empty())
 				loadMovieFile(avi_moviePath);
 		}
 		else if (avi == 3){
-			fs::path avi_moviePath("C:\\cinder_0.8.6_vc2013\\project\\ProjectionMapping2\\resources\\openingMovie.mp4");
+			fs::path avi_moviePath("C:\\cinder_0.8.6_vc2013\\projects\\ProjectionMapping\\resources\\openingMovie.mp4");
 			if (!avi_moviePath.empty())
 				loadMovieFile(avi_moviePath);
 		}
+
+		window_DIFFUSE = true;
+		window_AMBIENT = true;
+		window_SPECULAR = true;
+		window_EMISSIVE = true;
 	}
 
 	/*soul:5*/
