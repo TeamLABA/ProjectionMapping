@@ -68,10 +68,10 @@ const int BasicApp_N2 = 85;	//à íuçáÇÌÇπóp
 /*fireApp*/
 const int fireApp_buff = 100;
 const float fireApp_a = (const float)0.1;
-const float fireApp_XY[2] = { 640 - 170 * 2.5 *1.1/ 2 + 5/*271*/, 400 - 170 * 2.5*1.1 / 2 - 3 - 120 /*148*/ };
+const float fireApp_XY[2] = { (float)(640 - 170 * 2.5 *1.1/ 2 + 5)/*271*/, (float)(400 - 170 * 2.5*1.1 / 2 - 3 - 120) /*148*/ };
 //const float XY[2] = { 271, 148 };
 //const float XY[2] = { 259, 76 };
-const int fireApp_N = 170*2.5*1.1;
+const int fireApp_N = (int)(170*2.5*1.1);
 
 //à íuçáÇÌÇπÇµÇΩÇØÇ«ìÆÇ©Ç»Ç≠Ç»ÇËÇ‹ÇµÇΩ_fire
 
@@ -277,7 +277,6 @@ void ProjectionMapping2App::setup()
 	avi = 3;	//movie 3:openingMovie.mp4
 
 	resetup(sw);
-	time_start = clock();
 }
 
 void ProjectionMapping2App::mouseDrag(MouseEvent event)
@@ -387,7 +386,7 @@ void ProjectionMapping2App::update()
 #pragma omp for
 			for (int i = 1; i < BasicApp_N2 - 1; i++){
 				for (int j = 1; j < BasicApp_N - 1; j++){
-					BasicApp_pos[1][i][j] = (float)((BasicApp_pos[0][i - 1][j] + BasicApp_pos[0][i + 1][j] + BasicApp_pos[0][i][j - 1] + BasicApp_pos[0][i][j + 1] - 200) / 4 - (BasicApp_pos[0][i][j] - 50)) + BasicApp_pos[1][i][j] * 0.9;
+					BasicApp_pos[1][i][j] = (float)(((BasicApp_pos[0][i - 1][j] + BasicApp_pos[0][i + 1][j] + BasicApp_pos[0][i][j - 1] + BasicApp_pos[0][i][j + 1] - 200) / 4 - (BasicApp_pos[0][i][j] - 50)) + BasicApp_pos[1][i][j] * 0.9);
 					if (BasicApp_pos[1][i][j]>20){
 						BasicApp_pos[1][i][j] = 20;
 					}
@@ -1259,6 +1258,8 @@ void ProjectionMapping2App::resetup(int re_sw){
 		soul_PosX = (int)xyLeftUp[0];
 		soul_PosY = (int)xyLeftUp[1];
 	}
+
+	time_start = clock();
 }
 void ProjectionMapping2App::keyDown(KeyEvent event)
 {
