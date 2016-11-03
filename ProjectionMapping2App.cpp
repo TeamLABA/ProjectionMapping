@@ -55,7 +55,8 @@ GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
 GLfloat mat_emission[] = { 0.0, 0.1, 0.3, 0.0 };
 GLfloat mat_shininess[] = { 128.0 };
 GLfloat no_shininess[] = { 0.0 };
-const int BasicApp_N = 70; //100
+const int BasicApp_N = 107; //100
+const int BasicApp_N2 = 85;	//位置合わせ用
 
 /*fireApp*/
 const int fireApp_buff = 100;
@@ -214,7 +215,7 @@ public:
 
 	//protected:
 	/*BasicApp*/
-	float BasicApp_pos[2][BasicApp_N][BasicApp_N];
+	float BasicApp_pos[2][BasicApp_N2][BasicApp_N];
 	MayaCamUI mMayaCam;
 	CameraPersp cam;
 
@@ -249,7 +250,7 @@ void ProjectionMapping2App::setup()
 		console() << "Failed to initialize capture" << std::endl;
 	}
 
-	sw = 2;		//1:BasicApp, 2:fireApp, 3:PenkiApp, 4:TurnCube, 5:Shabon, 6:window, 7:movie, 8:soul
+	sw = 1;		//1:BasicApp, 2:fireApp, 3:PenkiApp, 4:TurnCube, 5:Shabon, 6:window, 7:movie, 8:soul
 	avi = 3;	//movie 3:openingMovie.mp4
 
 	resetup(sw);
@@ -304,9 +305,14 @@ void ProjectionMapping2App::update()
 		}
 	}
 
-	//位置合わせ済	//penki(+350,+250),shabon(+350,+250),soul(+350,+250)
-	x = x + 350;
-	y = y + 250;
+	//位置合わせ済	//BasicApp(0,+150),penki(+350,+250),shabon(+350,+250),soul(+350,+250)
+	if (sw==3 || sw==5 || sw==8){
+		x = x + 350;
+		y = y + 250;
+	}
+	else if (sw==1){
+		y = y + 150;
+	}
 
 	//time_end = clock();
 	//console() << "cam:"<<(double)(time_end - time_start) / CLOCKS_PER_SEC <<"[sec]"<< endl;
@@ -317,7 +323,7 @@ void ProjectionMapping2App::update()
 		if (sw == 1){
 			int x1 = x / 6;
 			int y1 = y / 6;
-			if (x1 > 2 && x1 < BasicApp_N - 3 && y1 > 2 && y1 < BasicApp_N - 3){
+			if (x1 > 2 && x1 < BasicApp_N2 - 3 && y1 > 2 && y1 < BasicApp_N - 3){
 #pragma omp parallel
 					{
 #pragma omp ss
@@ -334,7 +340,7 @@ void ProjectionMapping2App::update()
 	if (sw == 1){
 		//random wave
 		if (wave % 3 == 0){
-			int rndX = randInt(5, BasicApp_N - 5);
+			int rndX = randInt(5, BasicApp_N2 - 5);
 			int rndY = randInt(5, BasicApp_N - 5);
 #pragma omp parallel
 			{
@@ -352,7 +358,7 @@ void ProjectionMapping2App::update()
 #pragma omp parallel
 		{
 #pragma omp for
-			for (int i = 1; i < BasicApp_N - 1; i++){
+			for (int i = 1; i < BasicApp_N2 - 1; i++){
 				for (int j = 1; j < BasicApp_N - 1; j++){
 					BasicApp_pos[1][i][j] = ((BasicApp_pos[0][i - 1][j] + BasicApp_pos[0][i + 1][j] + BasicApp_pos[0][i][j - 1] + BasicApp_pos[0][i][j + 1] - 200) / 4 - (BasicApp_pos[0][i][j] - 50)) + BasicApp_pos[1][i][j] * 0.9;
 					if (BasicApp_pos[1][i][j]>20){
@@ -367,7 +373,7 @@ void ProjectionMapping2App::update()
 #pragma omp parallel
 			{
 #pragma omp for
-				for (int i = 1; i < BasicApp_N - 1; i++){
+				for (int i = 1; i < BasicApp_N2 - 1; i++){
 					for (int j = 1; j < BasicApp_N - 1; j++){
 						BasicApp_pos[0][i][j] += BasicApp_pos[1][i][j];
 						//mesh.appendVertex(Vec3f(i, pos[0][i][j], j));
@@ -708,7 +714,7 @@ void ProjectionMapping2App::draw()
 #pragma omp parallel
 		{
 #pragma omp for
-			for (int i = 0; i < BasicApp_N - 1; i++){
+			for (int i = 0; i < BasicApp_N2 - 1; i++){
 				for (int j = 0; j < BasicApp_N - 1; j++){
 					mesh.appendVertex(ci::Vec3f(i, BasicApp_pos[0][i][j], j));
 					mesh.appendColorRgb(Color(0.3f, 0.3f, 1));
@@ -1054,8 +1060,8 @@ void ProjectionMapping2App::resetup(int re_sw){
 	/*BasicApp*/
 	if (re_sw == 1){
 		//set up the camera
-		cam.setEyePoint(ci::Vec3f(BasicApp_N / 2, 200, BasicApp_N / 2));
-		cam.setCenterOfInterestPoint(ci::Vec3f(BasicApp_N / 2, 0.0f, BasicApp_N / 2));
+		cam.setEyePoint(ci::Vec3f(BasicApp_N2 / 2, 200, BasicApp_N / 2));
+		cam.setCenterOfInterestPoint(ci::Vec3f(BasicApp_N2 / 2, 0.0f, BasicApp_N / 2));
 		cam.setPerspective(60.0f, getWindowAspectRatio(), 1.0f, 200.0f);
 		mMayaCam.setCurrentCam(cam);
 
@@ -1069,13 +1075,13 @@ void ProjectionMapping2App::resetup(int re_sw){
 
 		//init
 		for (int i = 0; i < 1; i++){
-			for (int j = 0; j < BasicApp_N; j++){
+			for (int j = 0; j < BasicApp_N2; j++){
 				for (int k = 0; k < BasicApp_N; k++){
 					BasicApp_pos[i][j][k] = 50;
 				}
 			}
 		}
-		for (int j = 0; j < BasicApp_N; j++){
+		for (int j = 0; j < BasicApp_N2; j++){
 			for (int k = 0; k < BasicApp_N; k++){
 				BasicApp_pos[1][j][k] = 0;
 			}
