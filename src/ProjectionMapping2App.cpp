@@ -56,17 +56,17 @@ gl::Texture mTexture;
 
 /*BasicApp*/
 GLfloat no_mat[] = { 0.0, 0.0, 0.0, 1.0 };
-GLfloat mat_ambient[] = { 0.6, 0.3, 0.4, 1.0 };
-GLfloat mat_diffuse[] = { 0.3, 0.5, 0.8, 1.0 };
-GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
-GLfloat mat_emission[] = { 0.0, 0.1, 0.3, 0.0 };
+GLfloat mat_ambient[] = { (GLfloat)0.6, (GLfloat)0.3, (GLfloat)0.4, (GLfloat)1.0 };
+GLfloat mat_diffuse[] = { (GLfloat)0.3, (GLfloat)0.5, (GLfloat)0.8, (GLfloat)1.0 };
+GLfloat mat_specular[] = { (GLfloat)1.0, (GLfloat)1.0, (GLfloat)1.0, (GLfloat)1.0 };
+GLfloat mat_emission[] = { (GLfloat)0.0, (GLfloat)0.1, (GLfloat)0.3, (GLfloat)0.0 };
 GLfloat mat_shininess[] = { 128.0 };
 GLfloat no_shininess[] = { 0.0 };
 const int BasicApp_N = 70; //100
 
 /*fireApp*/
 const int fireApp_buff = 100;
-const float fireApp_a = 0.1;
+const float fireApp_a = (const float)0.1;
 const float fireApp_XY[2] = { 271, 148 };
 //const float XY[2] = { 271, 148 };
 //const float XY[2] = { 259, 76 };
@@ -113,10 +113,13 @@ bool debag = true;
 /*切り替えるスイッチの数*/
 const int sw_num = 8;
 
+const char app_name[8][32] = { { "soul" }, { "water" }, { "fireApp" }, { "PenkiApp" }, { "TurnCube" }, { "Shabon" }, { "window" }, { "movie" } };
+
 class ProjectionMapping2App : public AppNative {
 public:
 	void setup();
 	void mouseDrag(MouseEvent event);
+	void keyDown(KeyEvent event);
 	void update();
 	void draw();
 	void resetup(int re_sw);
@@ -328,8 +331,8 @@ void ProjectionMapping2App::update()
 	/*BasicApp*/
 	if (x > px1 && y > py1 && x < px2 && y < py2){
 		if (sw == 1){
-			int x1 = x / 6;
-			int y1 = y / 6;
+			int x1 = (int)(x / 6);
+			int y1 = (int)(y / 6);
 			if (x1 > 2 && x1 < BasicApp_N - 3 && y1 > 2 && y1 < BasicApp_N - 3){
 #pragma omp parallel
 					{
@@ -354,7 +357,7 @@ void ProjectionMapping2App::update()
 #pragma omp for
 				for (int i = -5; i < 5; i++){
 					for (int j = -5; j < 5; j++){
-						BasicApp_pos[1][rndX + i][rndY + j] -= BasicApp_N / 500.0;
+						BasicApp_pos[1][rndX + i][rndY + j] -= (float)(BasicApp_N / 500.0);
 					}
 				}
 			}
@@ -367,7 +370,7 @@ void ProjectionMapping2App::update()
 #pragma omp for
 			for (int i = 1; i < BasicApp_N - 1; i++){
 				for (int j = 1; j < BasicApp_N - 1; j++){
-					BasicApp_pos[1][i][j] = ((BasicApp_pos[0][i - 1][j] + BasicApp_pos[0][i + 1][j] + BasicApp_pos[0][i][j - 1] + BasicApp_pos[0][i][j + 1] - 200) / 4 - (BasicApp_pos[0][i][j] - 50)) + BasicApp_pos[1][i][j] * 0.9;
+					BasicApp_pos[1][i][j] = (float)((BasicApp_pos[0][i - 1][j] + BasicApp_pos[0][i + 1][j] + BasicApp_pos[0][i][j - 1] + BasicApp_pos[0][i][j + 1] - 200) / 4 - (BasicApp_pos[0][i][j] - 50)) + (float)(BasicApp_pos[1][i][j] * 0.9);
 					if (BasicApp_pos[1][i][j]>20){
 						BasicApp_pos[1][i][j] = 20;
 					}
@@ -394,8 +397,8 @@ void ProjectionMapping2App::update()
 		if (sw == 2){
 			if (x > 0 && x < fireApp_N - fireApp_circle && y > 0 && y < fireApp_N - fireApp_circle){
 				fireApp_pos[int(y)][int(x)] = 0;
-				fireApp_x = x;
-				fireApp_y = y;
+				fireApp_x = (int)x;
+				fireApp_y = (int)y;
 
 #pragma omp parallel
 				{
@@ -447,7 +450,7 @@ void ProjectionMapping2App::update()
 						if (firelevel < seedpram[i][j])
 							fireApp_pos[i + fireApp_buff][j] = 120;
 						else if (seedpram[i][j] < 20)
-							fireApp_pos[i + fireApp_buff][j] *= 0.3;
+							fireApp_pos[i + fireApp_buff][j] = (int)(fireApp_pos[i + fireApp_buff][j]*0.3);
 					}
 				}
 			}
@@ -524,8 +527,8 @@ void ProjectionMapping2App::update()
 	/*TurnCubeApp*/
 	if (x > px1 && y > py1 && x < px2 && y < py2){
 		if (sw == 4){
-			TurnCube_x = x;
-			TurnCube_y = y;
+			TurnCube_x = (int)x;
+			TurnCube_y = (int)y;
 		}
 	}
 	if (sw == 4){
@@ -540,17 +543,17 @@ void ProjectionMapping2App::update()
 		else if (TurnCube_f == 1){
 			if (TurnCube_kaiten <= TurnCube_px){
 				if (TurnCube_speed < 1){
-					TurnCube_mCubeRotation.rotate(ci::Vec3f(0, TurnCube_houkou, 0), TurnCube_speed / (2 * M_PI)); //回転
-					TurnCube_speed += 0.01;
+					TurnCube_mCubeRotation.rotate(ci::Vec3f(0, TurnCube_houkou, 0), (float)(TurnCube_speed / (2 * M_PI))); //回転
+					TurnCube_speed += (float)0.01;
 				}
 				else{
-					TurnCube_mCubeRotation.rotate(ci::Vec3f(0, TurnCube_houkou, 0), TurnCube_speed / (2 * M_PI)); //回転
+					TurnCube_mCubeRotation.rotate(ci::Vec3f(0, TurnCube_houkou, 0), (float)(TurnCube_speed / (2 * M_PI))); //回転
 					TurnCube_kaiten++;
 				}
 			}
 			else if (TurnCube_kaiten > TurnCube_px && TurnCube_kaiten <= 100 + TurnCube_px){
-				TurnCube_mCubeRotation.rotate(ci::Vec3f(0, TurnCube_houkou, 0), TurnCube_speed / (2 * M_PI)); //回転
-				TurnCube_speed -= 0.01;
+				TurnCube_mCubeRotation.rotate(ci::Vec3f(0, TurnCube_houkou, 0), (float)(TurnCube_speed / (2 * M_PI))); //回転
+				TurnCube_speed -= (float)0.01;
 				TurnCube_kaiten++;
 			}
 			else{
@@ -587,8 +590,8 @@ void ProjectionMapping2App::update()
 			Shabon_a = sqrt((Shabon_kyu[i][0][0] - Shabon_x)*(Shabon_kyu[i][0][0] - Shabon_x) + (Shabon_kyu[i][0][1] - Shabon_y)*(Shabon_kyu[i][0][1] - Shabon_y) + (Shabon_kyu[i][0][2] - Shabon_z)*(Shabon_kyu[i][0][2] - Shabon_z));
 
 			if (Shabon_a < Shabon_L){
-				Shabon_kyu[i][1][0] = 0.005*(Shabon_kyu[i][0][0] - Shabon_x) / Shabon_a;
-				Shabon_kyu[i][1][1] = 0.005*(Shabon_kyu[i][0][1] - Shabon_y) / Shabon_a;
+				Shabon_kyu[i][1][0] = (float)(0.005*(Shabon_kyu[i][0][0] - Shabon_x) / Shabon_a);
+				Shabon_kyu[i][1][1] = (float)(0.005*(Shabon_kyu[i][0][1] - Shabon_y) / Shabon_a);
 				Shabon_kyu[i][1][2] = (Shabon_kyu[i][0][2] - Shabon_z) / Shabon_a;
 			}
 			else{
@@ -633,26 +636,26 @@ void ProjectionMapping2App::update()
 	/*soul*/
 	if (x > px1 && y > py1 && x < px2 && y < py2){
 		if (sw == 0){
-			soul_x = x;
-			soul_y = y;
+			soul_x = (int)x;
+			soul_y = (int)y;
 		}
 	}
 	if (sw == 0){
-		soul_input[0] = soul_x;	soul_input[1] = soul_y;
+		soul_input[0] = (float)soul_x;	soul_input[1] = (float)soul_y;
 		if (soul_PosX == xyLeftUp[0] && soul_PosY == xyLeftUp[1]){
-			soul_Count = xyRightDown[0] - xyLeftUp[0] + 1;
+			soul_Count = (int)(xyRightDown[0] - xyLeftUp[0] + 1);
 			soul_f = 1;
 		}
 		else if (soul_PosX >= xyRightDown[0] && soul_PosY == xyLeftUp[1]){
-			soul_Count = xyRightDown[1] - xyLeftUp[1];
+			soul_Count = (int)(xyRightDown[1] - xyLeftUp[1]);
 			soul_f = 2;
 		}
 		else if (soul_PosX == xyRightDown[0] && soul_PosY == xyRightDown[1]){
-			soul_Count = xyRightDown[0] - xyLeftUp[0];
+			soul_Count = (int)(xyRightDown[0] - xyLeftUp[0]);
 			soul_f = 3;
 		}
 		else if (soul_PosX == xyLeftUp[0] && soul_PosY == xyRightDown[1]){
-			soul_Count = xyRightDown[1] - xyLeftUp[1];
+			soul_Count = (int)(xyRightDown[1] - xyLeftUp[1]);
 			soul_f = 4;
 		}
 
@@ -668,8 +671,8 @@ void ProjectionMapping2App::update()
 		else if (soul_f == 4 && soul_Count > 0){
 			soul_PosY -= 1; soul_Count -= 1;
 		}
-		soul_Pos[0] = soul_PosX;
-		soul_Pos[1] = soul_PosY;
+		soul_Pos[0] = (float)soul_PosX;
+		soul_Pos[1] = (float)soul_PosY;
 	}
 
 	//time_end = clock();
@@ -723,16 +726,16 @@ void ProjectionMapping2App::draw()
 #pragma omp for
 			for (int i = 0; i < BasicApp_N - 1; i++){
 				for (int j = 0; j < BasicApp_N - 1; j++){
-					mesh.appendVertex(ci::Vec3f(i, BasicApp_pos[0][i][j], j));
+					mesh.appendVertex(ci::Vec3f((float)i, BasicApp_pos[0][i][j], (float)j));
 					mesh.appendColorRgb(Color(0.3f, 0.3f, 1));
-					mesh.appendVertex(ci::Vec3f(i + 1, BasicApp_pos[0][i + 1][j], j));
-					mesh.appendVertex(ci::Vec3f(i, BasicApp_pos[0][i][j + 1], j + 1));
-					mesh.appendVertex(ci::Vec3f(i + 1, BasicApp_pos[0][i + 1][j + 1], j + 1));
+					mesh.appendVertex(ci::Vec3f((float)i + 1, BasicApp_pos[0][i + 1][j], (float)j));
+					mesh.appendVertex(ci::Vec3f((float)i, BasicApp_pos[0][i][j + 1], (float)(j + 1)));
+					mesh.appendVertex(ci::Vec3f((float)i + 1, BasicApp_pos[0][i + 1][j + 1], (float)(j + 1)));
 					int vIdx0 = mesh.getNumVertices() - 4;
 					int vIdx1 = mesh.getNumVertices() - 3;
 					int vIdx2 = mesh.getNumVertices() - 2;
 					int vIdx3 = mesh.getNumVertices() - 1;
-					ci::Vec3f norm = (ci::Vec3f(i + 1, BasicApp_pos[0][i + 1][j], j) - ci::Vec3f(i, BasicApp_pos[0][i][j], j)).cross(ci::Vec3f(i + 1, BasicApp_pos[0][i + 1][j], j) - ci::Vec3f(i, BasicApp_pos[0][i][j + 1], j + 1)).normalized();
+					ci::Vec3f norm = (ci::Vec3f((float)(i + 1), BasicApp_pos[0][i + 1][j], (float)j) - ci::Vec3f((float)i, BasicApp_pos[0][i][j], (float)j)).cross(ci::Vec3f((float)(i + 1), BasicApp_pos[0][i + 1][j], (float)j) - ci::Vec3f((float)i, BasicApp_pos[0][i][j + 1], (float)(j + 1))).normalized();
 					mesh.appendNormal(norm);
 					mesh.appendTriangle(vIdx0, vIdx1, vIdx2);
 					mesh.appendTriangle(vIdx3, vIdx1, vIdx2);
@@ -824,7 +827,7 @@ void ProjectionMapping2App::draw()
 			gl::multModelView(TurnCube_mCubeRotation);
 		}
 
-		gl::drawCube(ci::Vec3f(0, 0, 0), ci::Vec3f(120 * 0.454, 100 * 0.454, 0.05f));
+		gl::drawCube(ci::Vec3f(0, 0, 0), ci::Vec3f((float)(120 * 0.454), (float)(100 * 0.454), 0.05f));
 		glPopMatrix();
 	}
 
@@ -847,11 +850,11 @@ void ProjectionMapping2App::draw()
 			}
 			else{
 				//座標
-				Shabon_kyu[i][0][0] = randFloat(P1, P2);
-				Shabon_kyu[i][0][1] = randFloat(P3, P4);
+				Shabon_kyu[i][0][0] = randFloat((float)P1, (float)P2);
+				Shabon_kyu[i][0][1] = randFloat((float)P3, (float)P4);
 				//色
-				Shabon_kyu[i][2][0] = randFloat(0, 1);
-				Shabon_kyu[i][2][1] = randFloat(0.4, 1);
+				Shabon_kyu[i][2][0] = randFloat((float)0, (float)1);
+				Shabon_kyu[i][2][1] = randFloat((float)0.4, (float)1);
 			}
 		}
 	}
@@ -888,7 +891,7 @@ void ProjectionMapping2App::draw()
 
 		glMaterialfv(GL_FRONT, GL_EMISSION, window_mat_emission);
 
-		Rectf bounds(window_movie_size[0][0], window_movie_size[0][1], window_movie_size[1][0], window_movie_size[1][1]); //movie size
+		Rectf bounds((float)window_movie_size[0][0], (float)window_movie_size[0][1], (float)window_movie_size[1][0], (float)window_movie_size[1][1]); //movie size
 		gl::enableAlphaBlending(true);
 
 		if ((!window_movie) || (!window_mSurface))
@@ -939,7 +942,7 @@ void ProjectionMapping2App::draw()
 		//gl::pushMatrices();
 		gl::setMatrices(mMayaCam.getCamera());
 
-		Rectf bounds(window_movie_size[0][0], window_movie_size[0][1], window_movie_size[1][0], window_movie_size[1][1]);
+		Rectf bounds((float)window_movie_size[0][0], (float)window_movie_size[0][1], (float)window_movie_size[1][0], (float)window_movie_size[1][1]);
 		gl::enableAlphaBlending(true);
 
 		if ((!movie) || (!movie_mSurface))
@@ -964,13 +967,13 @@ void ProjectionMapping2App::draw()
 
 			if (soul_N <= 1){
 				soul_N = (soul_input[1] - soul_Pos[1]) / (soul_input[0] - soul_Pos[0]);
-				soul_PosX += (soul_input[0] - soul_Pos[0]) / abs(soul_input[0] - soul_Pos[0]);
+				soul_PosX += (int)((soul_input[0] - soul_Pos[0]) / abs(soul_input[0] - soul_Pos[0]));
 				soul_PosY = (int)(soul_PosY + soul_N + 0.5);
 			}
 			else{
 				soul_N = (soul_input[0] - soul_Pos[0]) / (soul_input[1] - soul_Pos[1]);
 				soul_PosX = (int)(soul_PosX + soul_N + 0.5);
-				soul_PosY += (soul_input[1] - soul_Pos[1]) / abs(soul_input[1] - soul_Pos[1]);
+				soul_PosY += (int)((soul_input[1] - soul_Pos[1]) / abs(soul_input[1] - soul_Pos[1]));
 			}
 
 			DrawGaussian();
@@ -978,7 +981,10 @@ void ProjectionMapping2App::draw()
 			//i = 0;
 		}
 		else{
-			if (soul_INorOUT == 1){ soul_PosX = xyLeftUp[0]; soul_PosY = xyLeftUp[1]; }
+			if (soul_INorOUT == 1){
+				soul_PosX = (int)xyLeftUp[0]; 
+				soul_PosY = (int)xyLeftUp[1]; 
+			}
 			soul_INorOUT = 2;
 			DrawGaussian();
 		}
@@ -986,8 +992,8 @@ void ProjectionMapping2App::draw()
 	//time_end = clock();
 	//console() << "draw:" << (double)(time_end - time_start) / CLOCKS_PER_SEC << "[sec]" << endl;
 
-
-	InputXY[0] = x; InputXY[1] = y;
+	InputXY[0] = (float)x;
+	InputXY[1] = (float)y;
 	gl::color(255, 0, 0);
 	gl::drawSolidCircle(InputXY, 5);
 }
@@ -1161,16 +1167,16 @@ void ProjectionMapping2App::resetup(int re_sw){
 		setWindowSize(1000, 800);
 		//座標の設定
 		for (int i = 0; i < Shabon_N; i++){
-			Shabon_kyu[i][0][0] = randFloat(P1, P2);
-			Shabon_kyu[i][0][1] = randFloat(P3, P4);
+			Shabon_kyu[i][0][0] = randFloat((float)P1, (float)P2);
+			Shabon_kyu[i][0][1] = randFloat((float)P3, (float)P4);
 			Shabon_kyu[i][0][2] = 0;
 			//初期速度と色情報
 			for (int j = 0; j < 3; j++){
 				Shabon_kyu[i][1][j] = 0;
 			}
-			Shabon_kyu[i][2][0] = randFloat(0, 1);
-			Shabon_kyu[i][2][1] = randFloat(0.4, 1);
-			Shabon_kyu[i][2][2] = randFloat(1, 1);
+			Shabon_kyu[i][2][0] = randFloat((float)0, (float)1);
+			Shabon_kyu[i][2][1] = randFloat((float)0.4, (float)1);
+			Shabon_kyu[i][2][2] = randFloat((float)1, (float)1);
 		}
 	}
 
@@ -1226,13 +1232,29 @@ void ProjectionMapping2App::resetup(int re_sw){
 	/*soul*/
 	else if (re_sw == 0){
 		gl::clear(Color(0, 0, 0));
-		xyLeftUp[0] = P1;		xyLeftUp[1] = P3;
-		xyRightDown[0] = P2;	xyRightDown[1] = P4;
-		soul_PosX = xyLeftUp[0]; soul_PosY = xyLeftUp[1];
+		xyLeftUp[0] = (float)P1;
+		xyLeftUp[1] = (float)P3;
+		xyRightDown[0] = (float)P2;
+		xyRightDown[1] = (float)P4;
+		soul_PosX = (int)xyLeftUp[0];
+		soul_PosY = (int)xyLeftUp[1];
 	}
 
 	time_start = clock();
 
+}
+void ProjectionMapping2App::keyDown(KeyEvent event)
+{
+	if (debag){
+		if (event.getChar() == 'f' || event.getChar() == 'F'){
+			setFullScreen(!isFullScreen());
+		}
+		else if (event.getChar() >= '0' && event.getChar() <= '7'){
+			sw = event.getChar() - 48;		//1:BasicApp, 2:fireApp, 3:PenkiApp, 4:TurnCube, 5:Shabon, 6:window, 7:movie, 0:soul
+			console() << "スイッチ：" << app_name[sw] << endl;
+			resetup(sw);
+		}
+	}
 }
 
 CINDER_APP_NATIVE(ProjectionMapping2App, RendererGl)
