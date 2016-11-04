@@ -98,7 +98,7 @@ GLfloat window_no_shininess[] = { 0.0 };
 
 GLfloat window_index[10][3] = { { 0 - 6, 320, 240 }, { 155 - 6, 320, 5 }, { 315 - 6, 320, 240 }, { 155 - 6, 320, 475 }, { 155 - 6, 320, 240 }, { 155 - 6, 320, 240 }, { 75 - 6, 320, 240 }, { 155 - 6, 320, 120 }, { 235 - 6, 320, 240 }, { 155 - 6, 320, 360 } };
 GLfloat window_size[2][3] = { { 10, 10, 480 }, { 320, 10, 10 } };
-const int movie_size[2][2] = { { 0, 0 }, { 1200, 880 } };
+const int movie_size[2][2] = { { 0, 0 }, { 1350, 795 } };
 const int window_N = 100;
 
 clock_t time_start, time_end;
@@ -271,8 +271,8 @@ void ProjectionMapping2App::setup()
 	}
 
 
-	sw = 1;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
-	avi = 2;	//movie 3:openingMovie.mp4
+	sw = 7;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
+	avi = 5;	//movie 3:openingMovie.mp4, 4:widow_TurnCube, 5:TurnCube_Shabon
 	setFullScreen(!isFullScreen());
 	resetup(sw);
 }
@@ -1272,8 +1272,8 @@ void ProjectionMapping2App::resetup(int re_sw){
 	/*movie*/
 	else if (re_sw == 7){
 		//CameraPersp cam;
-		cam.setEyePoint(ci::Vec3f(320, 700, 240));
-		cam.setCenterOfInterestPoint(ci::Vec3f(320, 0, 240));
+		cam.setEyePoint(ci::Vec3f(320 + 170, 700, 240 - 10));
+		cam.setCenterOfInterestPoint(ci::Vec3f(320 + 170, 0, 240 -10));
 		cam.setPerspective(80.0f, getWindowAspectRatio(), 1.0f, 700.0f);
 		mMayaCam.setCurrentCam(cam);
 
