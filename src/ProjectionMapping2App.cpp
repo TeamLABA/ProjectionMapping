@@ -1278,6 +1278,16 @@ void ProjectionMapping2App::resetup(int re_sw){
 			if (!avi_moviePath.empty())
 				loadMovieFile(avi_moviePath);
 		}
+		else if (avi == 4){
+			fs::path avi_moviePath("C:\\cinder_0.8.6_vc2013\\projects\\ProjectionMapping\\resources\\window_TurnCube.mp4");
+			if (!avi_moviePath.empty())
+				loadMovieFile(avi_moviePath);
+		}
+		else if (avi == 5){
+			fs::path avi_moviePath("C:\\cinder_0.8.6_vc2013\\projects\\ProjectionMapping\\resources\\TurnCube_Shabon.mp4");
+			if (!avi_moviePath.empty())
+				loadMovieFile(avi_moviePath);
+		}
 
 		window_DIFFUSE = true;
 		window_AMBIENT = true;
