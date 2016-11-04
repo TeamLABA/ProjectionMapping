@@ -62,8 +62,8 @@ GLfloat mat_specular[] = { (GLfloat)1.0, (GLfloat)1.0, (GLfloat)1.0, (GLfloat)1.
 GLfloat mat_emission[] = { (GLfloat)0.0, (GLfloat)0.1, (GLfloat)0.3, (GLfloat)0.0 };
 GLfloat mat_shininess[] = { 128.0 };
 GLfloat no_shininess[] = { 0.0 };
-const int BasicApp_N = 110; //100
-const int BasicApp_N2 = 110;	//位置合わせ用
+const int BasicApp_N = 106; //100 縦
+const int BasicApp_N2 = 102;	//位置合わせ用
 
 /*fireApp*/
 const int fireApp_buff = 100;
@@ -1134,8 +1134,8 @@ void ProjectionMapping2App::resetup(int re_sw){
 	/*BasicApp*/
 	if (re_sw == 1){
 		//set up the camera
-		cam.setEyePoint(ci::Vec3f(BasicApp_N2 / 2, 200, BasicApp_N / 2+3));
-		cam.setCenterOfInterestPoint(ci::Vec3f(BasicApp_N2 / 2, 0.0f, BasicApp_N / 2+3));
+		cam.setEyePoint(ci::Vec3f(BasicApp_N2 / 2, 200, BasicApp_N / 2+5));
+		cam.setCenterOfInterestPoint(ci::Vec3f(BasicApp_N2 / 2, 0.0f, BasicApp_N / 2+5));
 		cam.setPerspective(60.0f, getWindowAspectRatio(), 1.0f, 200.0f);
 		mMayaCam.setCurrentCam(cam);
 
