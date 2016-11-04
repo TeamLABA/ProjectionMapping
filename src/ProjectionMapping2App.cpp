@@ -304,7 +304,7 @@ void ProjectionMapping2App::update()
 		/*camera_ctApp*/
 		Mat input1(toOcv(mCap.getSurface()));
 		cvtColor(input1, hsv_image, CV_BGR2HSV);
-		inRange(hsv_image, Scalar(30, 100, 30), Scalar(40, 255, 255), mask_image);
+		inRange(hsv_image, Scalar(20, 80, 120), Scalar(40, 140, 255), mask_image);
 		cv::erode(mask_image, erode, cv::Mat(), Point(-1, -1), 2);
 		cv::dilate(erode, dilate, cv::Mat(), Point(-1, -1), 4);
 
