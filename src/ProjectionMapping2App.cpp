@@ -141,7 +141,7 @@ public:
 	Mat hsv_image, mask_image;
 	Mat erode, dilate;
 	double x, y,x_buff,y_buff;
-	int count;
+	int count,maxC;
 	int sw;
 
 	/*BasicApp*/
@@ -311,19 +311,22 @@ void ProjectionMapping2App::update()
 		cv::findContours(dilate, contours, CV_RETR_LIST, CV_CHAIN_APPROX_NONE);
 
 		x = 0.0; y = 0.0;
-
+		maxC = 0;
 #pragma omp parallel
 		{
 #pragma omp ss
 			for (int i = 0; i < contours.size(); i++){
 				count = contours.at(i).size();
 				x_buff = 0.0; y_buff = 0.0;
-				for (int j = 0; j < count; j++){
-					x_buff += contours.at(i).at(j).x;
-					y_buff += contours.at(i).at(j).y;
+				if (count > maxC){
+					maxC = count;
+					for (int j = 0; j < count; j++){
+						x_buff += contours.at(i).at(j).x;
+						y_buff += contours.at(i).at(j).y;
+					}
+					x += x_buff / count;
+					y += y_buff / count;
 				}
-				x += x_buff / count;
-				y += y_buff / count;
 			}
 		}
 	}
@@ -345,7 +348,7 @@ void ProjectionMapping2App::update()
 	//console() << "cam:"<<(double)(time_end - time_start) / CLOCKS_PER_SEC <<"[sec]"<< endl;
 	//time_start = clock();
 
-	/*BasicApp*/
+	/*BasicApp:1*/
 	if (x > px1 && y > py1 && x < px2 && y < py2){
 		if (sw == 1){
 
