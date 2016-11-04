@@ -324,14 +324,12 @@ void ProjectionMapping2App::update()
 						x_buff += contours.at(i).at(j).x;
 						y_buff += contours.at(i).at(j).y;
 					}
-					x += x_buff / count;
-					y += y_buff / count;
+					x = x_buff / count;
+					y = y_buff / count;
 				}
 			}
 		}
 	}
-	x /= contours.size();
-	y /= contours.size();
 
 	//à íuçáÇÌÇπçœ	//BasicApp(0,+150),penki(+350,+250),shabon(+350,+250),soul(+350,+250)
 	if (!debag){
