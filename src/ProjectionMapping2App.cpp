@@ -62,8 +62,8 @@ GLfloat mat_specular[] = { (GLfloat)1.0, (GLfloat)1.0, (GLfloat)1.0, (GLfloat)1.
 GLfloat mat_emission[] = { (GLfloat)0.0, (GLfloat)0.1, (GLfloat)0.3, (GLfloat)0.0 };
 GLfloat mat_shininess[] = { 128.0 };
 GLfloat no_shininess[] = { 0.0 };
-const int BasicApp_N = 120; //100
-const int BasicApp_N2 = 120;	//位置合わせ用
+const int BasicApp_N = 110; //100
+const int BasicApp_N2 = 110;	//位置合わせ用
 
 /*fireApp*/
 const int fireApp_buff = 100;
@@ -111,7 +111,7 @@ int P4 = 400 + 220 - 3;	//301
 
 /*Debug mode: true -> debag mode*/
 /*カメラがない場合はtrueにして実行してください*/
-bool debag = false;
+bool debag = true;
 
 /*切り替えるスイッチの数*/
 const int sw_num = 8;
@@ -849,7 +849,7 @@ void ProjectionMapping2App::draw()
 			gl::multModelView(TurnCube_mCubeRotation);
 		}
 
-		gl::drawCube(ci::Vec3f(0, 0, 0), ci::Vec3f((float)(120 * 0.454), (float)(100 * 0.454), 0.05f));
+		gl::drawCube(ci::Vec3f(0, 0, 0), ci::Vec3f((float)(228 * 0.454), (float)(230 * 0.454), 0.05f));
 		glPopMatrix();
 	}
 
@@ -1134,8 +1134,8 @@ void ProjectionMapping2App::resetup(int re_sw){
 	/*BasicApp*/
 	if (re_sw == 1){
 		//set up the camera
-		cam.setEyePoint(ci::Vec3f(BasicApp_N2 / 2, 200, BasicApp_N / 2-5));
-		cam.setCenterOfInterestPoint(ci::Vec3f(BasicApp_N2 / 2, 0.0f, BasicApp_N / 2-5));
+		cam.setEyePoint(ci::Vec3f(BasicApp_N2 / 2, 200, BasicApp_N / 2+3));
+		cam.setCenterOfInterestPoint(ci::Vec3f(BasicApp_N2 / 2, 0.0f, BasicApp_N / 2+3));
 		cam.setPerspective(60.0f, getWindowAspectRatio(), 1.0f, 200.0f);
 		mMayaCam.setCurrentCam(cam);
 
@@ -1214,8 +1214,8 @@ void ProjectionMapping2App::resetup(int re_sw){
 		TurnCube_EMISSIVE = true;
 
 		//視点設定
-		cam.setEyePoint(ci::Vec3f(85.5, -47.5, 200));
-		cam.setCenterOfInterestPoint(ci::Vec3f(85.5, -47.5, 0));
+		cam.setEyePoint(ci::Vec3f(85.5 - 85, -47.5 + 43, 150));
+		cam.setCenterOfInterestPoint(ci::Vec3f(85.5 - 85, -47.5 + 43, 0));
 		cam.setPerspective(60.0f, getWindowAspectRatio(), 1.0f, 200.0f);
 		mMayaCam.setCurrentCam(cam);
 
