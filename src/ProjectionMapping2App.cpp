@@ -272,7 +272,7 @@ void ProjectionMapping2App::setup()
 
 
 	sw = 7;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
-	avi = 5;	//movie 3:openingMovie.mp4, 4:widow_TurnCube, 5:TurnCube_Shabon
+	avi = 5;	//movie 1:fire_water, 2:water_window, 3:openingMovie.mp4, 4:widow_TurnCube, 5:TurnCube_Shabon
 	setFullScreen(!isFullScreen());
 	resetup(sw);
 }
