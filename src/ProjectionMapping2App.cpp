@@ -62,8 +62,8 @@ GLfloat mat_specular[] = { (GLfloat)1.0, (GLfloat)1.0, (GLfloat)1.0, (GLfloat)1.
 GLfloat mat_emission[] = { (GLfloat)0.0, (GLfloat)0.1, (GLfloat)0.3, (GLfloat)0.0 };
 GLfloat mat_shininess[] = { 128.0 };
 GLfloat no_shininess[] = { 0.0 };
-const int BasicApp_N = 107; //100
-const int BasicApp_N2 = 85;	//位置合わせ用
+const int BasicApp_N = 120; //100
+const int BasicApp_N2 = 120;	//位置合わせ用
 
 /*fireApp*/
 const int fireApp_buff = 100;
@@ -111,7 +111,7 @@ int P4 = 400 + 220 - 3;	//301
 
 /*Debug mode: true -> debag mode*/
 /*カメラがない場合はtrueにして実行してください*/
-bool debag = true;
+bool debag = false;
 
 /*切り替えるスイッチの数*/
 const int sw_num = 8;
@@ -271,9 +271,9 @@ void ProjectionMapping2App::setup()
 	}
 
 
-	sw = 0;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
+	sw = 1;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
 	avi = 2;	//movie 3:openingMovie.mp4
-
+	setFullScreen(!isFullScreen());
 	resetup(sw);
 }
 
@@ -336,9 +336,9 @@ void ProjectionMapping2App::update()
 			x = x + 350;
 			y = y + 250;
 		}
-		else if (sw == 1){
-			y = y + 150;
-		}
+		//else if (sw == 1){
+		//	y = y + 150;
+		//}
 	}
 
 	//time_end = clock();
@@ -714,7 +714,7 @@ void ProjectionMapping2App::draw()
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		// gray background
-		gl::clear(Colorf(0.5f, 0.5f, 0.5f));
+		gl::clear(Colorf(0.0f, 0.0f, 0.0f));
 		GLfloat light_position[] = { 500, 0.0f, 100.0f, 0.0f };
 		glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 
@@ -1045,8 +1045,19 @@ void ProjectionMapping2App::draw()
 
 
 InputXY[0] = (float)(x + 320); InputXY[1] = (float)(y + 230);
+//InputXY[0] = (float)(x ); InputXY[1] = (float)(y );
 	gl::color(255, 0, 0);
 	gl::drawSolidCircle(InputXY, 5);
+
+	for (int i = 0; i < contours.size(); i++){
+		count = contours.at(i).size();
+		x_buff = 0.0; y_buff = 0.0;
+		for (int j = 0; j < count; j++){
+			InputXY[0] = contours.at(i).at(j).x+320;
+			InputXY[1] = contours.at(i).at(j).y+230;
+			gl::drawSolidCircle(InputXY, 1);
+		}
+	}
 }
 
 void ProjectionMapping2App::drawGrid(float size, float step)
@@ -1122,8 +1133,8 @@ void ProjectionMapping2App::resetup(int re_sw){
 	/*BasicApp*/
 	if (re_sw == 1){
 		//set up the camera
-		cam.setEyePoint(ci::Vec3f(BasicApp_N2 / 2, 200, BasicApp_N / 2));
-		cam.setCenterOfInterestPoint(ci::Vec3f(BasicApp_N2 / 2, 0.0f, BasicApp_N / 2));
+		cam.setEyePoint(ci::Vec3f(BasicApp_N2 / 2, 200, BasicApp_N / 2-5));
+		cam.setCenterOfInterestPoint(ci::Vec3f(BasicApp_N2 / 2, 0.0f, BasicApp_N / 2-5));
 		cam.setPerspective(60.0f, getWindowAspectRatio(), 1.0f, 200.0f);
 		mMayaCam.setCurrentCam(cam);
 
@@ -1229,6 +1240,8 @@ void ProjectionMapping2App::resetup(int re_sw){
 			Shabon_kyu[i][2][1] = randFloat((float)0.4, (float)1);
 			Shabon_kyu[i][2][2] = randFloat((float)1, (float)1);
 		}
+		setFullScreen(!isFullScreen());
+		setFullScreen(!isFullScreen());
 	}
 
 	/*window:2*/
@@ -1310,11 +1323,12 @@ void ProjectionMapping2App::resetup(int re_sw){
 }
 void ProjectionMapping2App::keyDown(KeyEvent event)
 {
+
+	if (event.getChar() == 'f' || event.getChar() == 'F'){
+		setFullScreen(!isFullScreen());
+	}
 	if (debag){
-		if (event.getChar() == 'f' || event.getChar() == 'F'){
-			setFullScreen(!isFullScreen());
-		}
-		else if (event.getChar() >= '0' && event.getChar() <= '7'){
+		if (event.getChar() >= '0' && event.getChar() <= '7'){
 			sw = event.getChar() - 48;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
 			console() << "スイッチ：" << app_name[sw] << endl;
 			resetup(sw);
