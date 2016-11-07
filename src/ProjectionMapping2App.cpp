@@ -55,6 +55,12 @@ using namespace cv;
 
 /*camera_ctApp*/
 gl::Texture mTexture;
+int camera_X1 = 169;	//カメラに映るパネル左上のx座標
+int camera_Y1 = 47;	//y座標
+int camera_X2 = 593;	//カメラに映るパネル右下の座標
+int camera_Y2 = 445;	//y座標
+int D1x = 420;	//プログラム上での描画部分左上のx座標
+int D1y = 112;	//y座標
 
 /*BasicApp*/
 GLfloat no_mat[] = { 0.0, 0.0, 0.0, 1.0 };
@@ -114,19 +120,20 @@ int P4 = 400 + 220 - 70;	//301
 
 /*Debug mode: true -> debag mode*/
 /*カメラがない場合はtrueにして実行してください*/
-bool debag = true;
+bool debag = false;
 
 /*切り替えるスイッチの数*/
 const int sw_num = 8;
 
 const char app_name[8][32] = { { "fireApp" }, { "water" }, { "window" }, { "TurnCube" }, { "Shabon" }, { "soul" }, { "PenkiApp" }, { "movie" } };
-const int elapsed_time = 10; //10[sec]
+const int elapsed_time = 100; //10[sec]
 const double movie_time[8] = {64,0,12,5,5,0,0,0}; 
 
 class ProjectionMapping2App : public AppNative {
 public:
 	void setup();
 	void mouseDrag(MouseEvent event);
+	void mouseDown(MouseEvent event);
 	void keyDown(KeyEvent event);
 	void update();
 	void draw();
@@ -139,13 +146,15 @@ public:
 	//void drawGrid(float size = 100.0f, float step = 10.0f);
 
 	/*camera_ctApp*/
+	int mouseX, mouseY;
 	Capture mCap;
 	int cnt;
 	int px1, py1, px2, py2;
 	vector< vector<Point> > contours;
 	Mat hsv_image, mask_image;
 	Mat erode, dilate;
-	double x, y,x_buff,y_buff;
+	double bx, by,x_buff,y_buff;
+	double x, y;
 	int count,maxC;
 	int sw;
 
@@ -276,7 +285,7 @@ void ProjectionMapping2App::setup()
 	}
 
 
-	sw = 7;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
+	sw = 6;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
 	avi = 0;	//movie 1:fire_water, 2:water_window, 3:openingMovie.mp4, 4:widow_TurnCube, 5:TurnCube_Shabon
 	setFullScreen(!isFullScreen());
 	resetup(sw);
@@ -328,7 +337,7 @@ void ProjectionMapping2App::update()
 
 		cv::findContours(dilate, contours, CV_RETR_LIST, CV_CHAIN_APPROX_NONE);
 
-		x = 0.0; y = 0.0;
+		bx = 0.0; by = 0.0;
 		maxC = 0;
 #pragma omp parallel
 		{
@@ -342,30 +351,23 @@ void ProjectionMapping2App::update()
 						x_buff += contours.at(i).at(j).x;
 						y_buff += contours.at(i).at(j).y;
 					}
-					x = x_buff / count;
-					y = y_buff / count;
+					bx = x_buff / count;
+					by = y_buff / count;
 				}
 			}
 		}
 	}
 
-	//位置合わせ済	//BasicApp(0,+150),penki(+350,+250),shabon(+350,+250),soul(+350,+250)
-	if (!debag){
-		if (sw == 6 || sw == 4 || sw == 5){
-			x = x + 350;
-			y = y + 250;
-		}
-		//else if (sw == 1){
-		//	y = y + 150;
-		//}
-	}
+	x = (bx - camera_X1) + D1x;
+	y = (by - camera_Y1) + D1y;
+	
 
 	//time_end = clock();
 	//console() << "cam:"<<(double)(time_end - time_start) / CLOCKS_PER_SEC <<"[sec]"<< endl;
 	//time_start = clock();
 
 	/*BasicApp:1*/
-	if (x > px1 && y > py1 && x < px2 && y < py2){
+//	if (x > px1 && y > py1 && x < px2 && y < py2){
 		if (sw == 1){
 
 			int x1 = (int)(x / 6);
@@ -384,7 +386,7 @@ void ProjectionMapping2App::update()
 					}
 			}
 		}
-	}
+//	}
 	if (sw == 1){
 		//random wave
 		if (wave % 3 == 0){
@@ -431,7 +433,7 @@ void ProjectionMapping2App::update()
 	}
 
 	/*fireApp:0*/
-	if (x > px1 && y > py1 && x < px2 && y < py2){
+//	if (x > px1 && y > py1 && x < px2 && y < py2){
 		if (sw == 0){
 			if (x > 0 && x < fireApp_N - fireApp_circle && y > 0 && y < fireApp_N+20 - fireApp_circle){
 				fireApp_pos[int(y)][int(x)] = 0;
@@ -463,7 +465,7 @@ void ProjectionMapping2App::update()
 				}
 			}
 		}
-	}
+//	}
 	//各点(0,0)~(300,300)の火種を配置
 	if (sw == 0){
 #pragma omp parallel
@@ -516,7 +518,7 @@ void ProjectionMapping2App::update()
 	}
 
 	/*PenkiApp:6*/
-	if (x > px1 && y > py1 && x < px2 && y < py2){
+//	if (x > px1 && y > py1 && x < px2 && y < py2){
 		if (sw == 6){
 			using normal = std::normal_distribution<float>;
 			using uniform = std::uniform_real_distribution<float>;
@@ -537,7 +539,7 @@ void ProjectionMapping2App::update()
 				waterdrops.push_back(obj);
 			}
 		}
-	}
+//	}
 	if (sw == 6){
 		std::list<Waterdrop> appends;
 		for (auto& obj : waterdrops){
@@ -563,12 +565,12 @@ void ProjectionMapping2App::update()
 	}
 
 	/*TurnCubeApp:3*/
-	if (x > px1 && y > py1 && x < px2 && y < py2){
+//	if (x > px1 && y > py1 && x < px2 && y < py2){
 		if (sw == 3){
 			TurnCube_x = (int)x;
 			TurnCube_y = (int)y;
 		}
-	}
+//	}
 	if (sw == 3){
 		if (TurnCube_f == 0){
 			if ((TurnCube_x < 270 || TurnCube_y < 150) || (TurnCube_x > 440 || TurnCube_y > 300)){
@@ -617,12 +619,12 @@ void ProjectionMapping2App::update()
 	}
 
 	/*Shabon:4*/
-	if (x > px1 && y > py1 && x < px2 && y < py2){
+//	if (x > px1 && y > py1 && x < px2 && y < py2){
 		if (sw == 4){
 			Shabon_x = int(x);
 			Shabon_y = int(y);
 		}
-	}
+//	}
 	if (sw == 4){
 		for (int i = 0; i < Shabon_N; i++){
 			Shabon_a = sqrt((Shabon_kyu[i][0][0] - Shabon_x)*(Shabon_kyu[i][0][0] - Shabon_x) + (Shabon_kyu[i][0][1] - Shabon_y)*(Shabon_kyu[i][0][1] - Shabon_y) + (Shabon_kyu[i][0][2] - Shabon_z)*(Shabon_kyu[i][0][2] - Shabon_z));
@@ -644,11 +646,11 @@ void ProjectionMapping2App::update()
 	}
 
 	/*window:2*/
-	if (x > px1 && y > py1 && x < px2 && y < py2){
+//	if (x > px1 && y > py1 && x < px2 && y < py2){
 		if (sw == 2){
 			window_flag = 1;
 		}
-	}
+//	}
 
 	if (sw == 2){
 		window_r += window_flag * 2;
@@ -673,12 +675,12 @@ void ProjectionMapping2App::update()
 	}
 
 	/*soul:5*/
-	if (x > px1 && y > py1 && x < px2 && y < py2){
+//	if (x > px1 && y > py1 && x < px2 && y < py2){
 		if (sw == 5){
 			soul_x = (int)x;
 			soul_y = (int)y;
 		}
-	}
+//	}
 	if (sw == 5){
 		soul_input[0] = (float)soul_x;	soul_input[1] = (float)soul_y;
 		if (soul_PosX == xyLeftUp[0] && soul_PosY == xyLeftUp[1]){
@@ -1064,8 +1066,8 @@ void ProjectionMapping2App::draw()
 	//console() << "draw:" << (double)(time_end - time_start) / CLOCKS_PER_SEC << "[sec]" << endl;
 
 
-InputXY[0] = (float)(x + 320); InputXY[1] = (float)(y + 230);
-//InputXY[0] = (float)(x ); InputXY[1] = (float)(y );
+//InputXY[0] = (float)(x + 320); InputXY[1] = (float)(y + 230);
+InputXY[0] = (float)(x); InputXY[1] = (float)(y);
 	gl::color(255, 0, 0);
 	gl::drawSolidCircle(InputXY, 5);
 
@@ -1369,6 +1371,12 @@ void ProjectionMapping2App::keyDown(KeyEvent event)
 			resetup(sw);
 		}
 	}
+}
+
+void ProjectionMapping2App::mouseDown(MouseEvent event){
+	mouseX = event.getX();
+	mouseY = event.getY();
+	console() << mouseX << "," << mouseY << endl;
 }
 
 CINDER_APP_NATIVE(ProjectionMapping2App, RendererGl)
