@@ -46,6 +46,8 @@
 /*time*/
 #include <time.h>
 
+#include<windows.h>
+
 using namespace ci;
 using namespace ci::app;
 using namespace std;
@@ -117,6 +119,8 @@ bool debag = true;
 const int sw_num = 8;
 
 const char app_name[8][32] = { { "fireApp" }, { "water" }, { "window" }, { "TurnCube" }, { "Shabon" }, { "soul" }, { "PenkiApp" }, { "movie" } };
+const int elapsed_time = 10; //10[sec]
+const double movie_time[8] = {64,0,12,5,5,0,0,0}; 
 
 class ProjectionMapping2App : public AppNative {
 public:
@@ -131,7 +135,7 @@ public:
 	double ch_time = 0;
 
 	/*BasicApp*/
-	void drawGrid(float size = 100.0f, float step = 10.0f);
+	//void drawGrid(float size = 100.0f, float step = 10.0f);
 
 	/*camera_ctApp*/
 	Capture mCap;
@@ -272,7 +276,7 @@ void ProjectionMapping2App::setup()
 
 
 	sw = 7;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
-	avi = 5;	//movie 1:fire_water, 2:water_window, 3:openingMovie.mp4, 4:widow_TurnCube, 5:TurnCube_Shabon
+	avi = 0;	//movie 1:fire_water, 2:water_window, 3:openingMovie.mp4, 4:widow_TurnCube, 5:TurnCube_Shabon
 	setFullScreen(!isFullScreen());
 	resetup(sw);
 }
@@ -295,10 +299,23 @@ void ProjectionMapping2App::update()
 
 	//console() << "time:" << (double)(time_end - time_start) / CLOCKS_PER_SEC << "[sec]" << endl;
 
-	if (ch_time > 100.0){
-		resetup(++sw%sw_num);
-	}
+	//if (ch_time > 100.0){
+	//	resetup(++sw%sw_num);
+	//}
 
+	if (ch_time >= elapsed_time&&sw!=7){
+		sw = 7;
+		resetup(sw);
+	}
+	else if (ch_time >= movie_time[avi] && sw == 7){
+		sw = avi;
+		avi += 1;
+		if (avi == 8){
+			sw = 7;
+			avi = 0;
+		}
+		resetup(sw);
+	}
 
 	if (!debag){
 		/*camera_ctApp*/
@@ -740,7 +757,7 @@ void ProjectionMapping2App::draw()
 		glMaterialfv(GL_FRONT, GL_EMISSION, mat_emission);
 
 		// draw the grid on the floor
-		drawGrid();
+		//drawGrid();
 		gl::color(0.2f, 0.2f, 0.9f, 0.5f);
 #pragma omp parallel
 		{
@@ -997,6 +1014,7 @@ void ProjectionMapping2App::draw()
 
 		if ((!movie) || (!movie_mSurface)){
 			console() << "err" << endl;
+			sleep(1000);
 			return;
 		}
 
@@ -1061,14 +1079,14 @@ InputXY[0] = (float)(x + 320); InputXY[1] = (float)(y + 230);
 	}
 }
 
-void ProjectionMapping2App::drawGrid(float size, float step)
-{
-	gl::color(Colorf(0.2f, 0.2f, 0.2f));
-	for (float i = -size; i <= size; i += step) {
-		gl::drawLine(ci::Vec3f(i, 0.0f, -size), ci::Vec3f(i, 0.0f, size));
-		gl::drawLine(ci::Vec3f(-size, 0.0f, i), ci::Vec3f(size, 0.0f, i));
-	}
-}
+//void ProjectionMapping2App::drawGrid(float size, float step)
+//{
+//	gl::color(Colorf(0.2f, 0.2f, 0.2f));
+//	for (float i = -size; i <= size; i += step) {
+//		gl::drawLine(ci::Vec3f(i, 0.0f, -size), ci::Vec3f(i, 0.0f, size));
+//		gl::drawLine(ci::Vec3f(-size, 0.0f, i), ci::Vec3f(size, 0.0f, i));
+//	}
+//}
 
 void ProjectionMapping2App::reload()
 {
@@ -1287,17 +1305,32 @@ void ProjectionMapping2App::resetup(int re_sw){
 			if (!avi_moviePath.empty())
 				loadMovieFile(avi_moviePath);
 		}
-		else if (avi == 3){
+		else if (avi == 0){
 			fs::path avi_moviePath("C:\\cinder_0.8.6_vc2013\\projects\\ProjectionMapping\\resources\\openingMovie.mp4");
 			if (!avi_moviePath.empty())
 				loadMovieFile(avi_moviePath);
 		}
-		else if (avi == 4){
+		else if (avi == 3){
 			fs::path avi_moviePath("C:\\cinder_0.8.6_vc2013\\projects\\ProjectionMapping\\resources\\window_TurnCube.mp4");
 			if (!avi_moviePath.empty())
 				loadMovieFile(avi_moviePath);
 		}
+		else if (avi == 4){
+			fs::path avi_moviePath("C:\\cinder_0.8.6_vc2013\\projects\\ProjectionMapping\\resources\\TurnCube_Shabon.mp4");
+			if (!avi_moviePath.empty())
+				loadMovieFile(avi_moviePath);
+		}
 		else if (avi == 5){
+			fs::path avi_moviePath("C:\\cinder_0.8.6_vc2013\\projects\\ProjectionMapping\\resources\\TurnCube_Shabon.mp4");
+			if (!avi_moviePath.empty())
+				loadMovieFile(avi_moviePath);
+		}
+		else if (avi == 6){
+			fs::path avi_moviePath("C:\\cinder_0.8.6_vc2013\\projects\\ProjectionMapping\\resources\\TurnCube_Shabon.mp4");
+			if (!avi_moviePath.empty())
+				loadMovieFile(avi_moviePath);
+		}
+		else if (avi == 7){
 			fs::path avi_moviePath("C:\\cinder_0.8.6_vc2013\\projects\\ProjectionMapping\\resources\\TurnCube_Shabon.mp4");
 			if (!avi_moviePath.empty())
 				loadMovieFile(avi_moviePath);
