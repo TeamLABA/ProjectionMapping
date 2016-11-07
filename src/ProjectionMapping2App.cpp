@@ -616,8 +616,8 @@ void ProjectionMapping2App::update()
 	/*Shabon:4*/
 	if (sw == 4){
 		if (x > 0 && y > 0 && x < 100 && y < 100){
-			Shabon_x = int(x);
-			Shabon_y = int(y);
+			Shabon_x = (int)((P3 - P1)*x / 100 + P1);
+			Shabon_y = (int)((P4 - P2)*y / 100 + P2);
 		}
 
 		for (int i = 0; i < Shabon_N; i++){
@@ -669,8 +669,8 @@ void ProjectionMapping2App::update()
 	/*soul:5*/
 	if (sw == 5){	
 		if (x > 0 && y > 0 && x < 100 && y < 100){
-			soul_x = (int)x;
-			soul_y = (int)y;
+			soul_x = (int)((P3 - P1)*x / 100 + P1);
+			soul_y = (int)((P4 - P2)*y / 100 + P2);
 		}
 
 		soul_input[0] = (float)soul_x;	soul_input[1] = (float)soul_y;
