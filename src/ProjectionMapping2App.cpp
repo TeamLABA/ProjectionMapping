@@ -288,7 +288,7 @@ void ProjectionMapping2App::setup()
 
 
 	sw = 6;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
-	avi = 0;	//movie 1:fire_water, 2:water_window, 3:openingMovie.mp4, 4:widow_TurnCube, 5:TurnCube_Shabon
+	avi = 0;	//movie 1:fire_water, 2:water_window, 0:openingMovie.mp4, 4:widow_TurnCube, 5:TurnCube_Shabon
 	setFullScreen(!isFullScreen());
 	resetup(sw);
 }
@@ -1207,6 +1207,8 @@ void ProjectionMapping2App::resetup(int re_sw){
 				}
 			}
 		}
+		setFullScreen(!isFullScreen());
+		setFullScreen(!isFullScreen());
 	}
 
 	/*PenkiApp:6*/
