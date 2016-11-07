@@ -156,7 +156,6 @@ public:
 	int mouseX, mouseY;
 	Capture mCap;
 	int cnt;
-	int px1, py1, px2, py2;
 	vector< vector<Point> > contours;
 	Mat hsv_image, mask_image;
 	Mat erode, dilate;
@@ -278,10 +277,6 @@ void ProjectionMapping2App::setup()
 	if (!debag){
 		/*camera_ctApp*/
 		cnt = 0;
-		px1 = 393;	//x
-		py1 = 140;	//y
-		px2 = 882;	//x1
-		py2 = 633;	//y1
 		try{
 			mCap = Capture(640, 480);
 			mCap.start();
@@ -364,10 +359,9 @@ void ProjectionMapping2App::update()
 			}
 		}
 	}
-
-	x = (bx - camera_X1) + D1x;
-	y = (by - camera_Y1) + D1y;
 	
+	x = 100 * (bx - camera_X1)/(camera_X2-camera_X1);
+	y = 100 * (by - camera_Y1)/(camera_Y2-camera_Y1);
 
 	//time_end = clock();
 	//console() << "cam:"<<(double)(time_end - time_start) / CLOCKS_PER_SEC <<"[sec]"<< endl;
