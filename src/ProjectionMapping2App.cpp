@@ -568,7 +568,7 @@ void ProjectionMapping2App::update()
 		}
 
 		if (TurnCube_f == 0){
-			if ((TurnCube_x < 270 || TurnCube_y < 150) || (TurnCube_x > 440 || TurnCube_y > 300)){
+			if ((TurnCube_x < P1 || TurnCube_y < P3) || (TurnCube_x > P2 || TurnCube_y > P4)){
 				TurnCube_f = 2;
 			}
 			else{
@@ -592,7 +592,7 @@ void ProjectionMapping2App::update()
 				TurnCube_kaiten++;
 			}
 			else{
-				if ((TurnCube_x < 270 || TurnCube_y < 150) || (TurnCube_x > 440 || TurnCube_y > 300)){
+				if ((TurnCube_x < P1 || TurnCube_y < P3) || (TurnCube_x > P2 || TurnCube_y > P4)){
 					TurnCube_f = 2;
 					TurnCube_kaiten = 0;
 				}
@@ -602,11 +602,11 @@ void ProjectionMapping2App::update()
 			}
 		}
 		else if (TurnCube_f == 2){
-			if ((TurnCube_x > 270 && TurnCube_y > 150) && (TurnCube_x < 440 / 2 && TurnCube_y < 300)){
+			if ((TurnCube_x > P1 && TurnCube_y > P3) && (TurnCube_x < P2 / 2 && TurnCube_y < P4)){
 				TurnCube_f = 1;
 				TurnCube_houkou = 1;
 			}
-			else if ((TurnCube_x >= 440 / 2 && TurnCube_y > 150) && (TurnCube_x < 440 && TurnCube_y < 300)){
+			else if ((TurnCube_x >= P2 / 2 && TurnCube_y > P3) && (TurnCube_x < P2 && TurnCube_y < P4)){
 				TurnCube_f = 1;
 				TurnCube_houkou = -1;
 			}
