@@ -526,8 +526,8 @@ void ProjectionMapping2App::update()
 				obj.life = normal(0.4f, 0.2f)(mt);
 				float dx = uniform(-3.0f, 3.0f)(mt);
 				float dy = uniform(-3.0f, 3.0f)(mt);
-				obj.PenkiApp_pos.x = (P3 - P1)*x / 100 + dx + P1;
-				obj.PenkiApp_pos.y = (P4 - P2)*y / 100 + dy + P2;
+				obj.PenkiApp_pos.x = (P2 - P1)*x / 100 + dx + P1;
+				obj.PenkiApp_pos.y = (P4 - P3)*y / 100 + dy + P3;
 				obj.radius = normal(10.0f, 7.0f - (abs(dx) + abs(dy)))(mt);
 				float r = uniform(0.8f, 1.0f)(mt);
 				float g = uniform(0.2f, 0.5f)(mt);
@@ -616,8 +616,8 @@ void ProjectionMapping2App::update()
 	/*Shabon:4*/
 	if (sw == 4){
 		if (x > 0 && y > 0 && x < 100 && y < 100){
-			Shabon_x = (int)((P3 - P1)*x / 100 + P1);
-			Shabon_y = (int)((P4 - P2)*y / 100 + P2);
+			Shabon_x = (int)((P2 - P1)*x / 100 + P1);
+			Shabon_y = (int)((P4 - P3)*y / 100 + P3);
 		}
 
 		for (int i = 0; i < Shabon_N; i++){
@@ -669,8 +669,8 @@ void ProjectionMapping2App::update()
 	/*soul:5*/
 	if (sw == 5){	
 		if (x > 0 && y > 0 && x < 100 && y < 100){
-			soul_x = (int)((P3 - P1)*x / 100 + P1);
-			soul_y = (int)((P4 - P2)*y / 100 + P2);
+			soul_x = (int)((P2 - P1)*x / 100 + P1);
+			soul_y = (int)((P4 - P3)*y / 100 + P3);
 		}
 
 		soul_input[0] = (float)soul_x;	soul_input[1] = (float)soul_y;
@@ -1058,7 +1058,7 @@ void ProjectionMapping2App::draw()
 
 
 //InputXY[0] = (float)(x + 320); InputXY[1] = (float)(y + 230);
-InputXY[0] = (float)(x); InputXY[1] = (float)(y);
+InputXY[0] = (float)((P2-P1)*x/100+P1); InputXY[1] = (float)((P4-P3)*y/100+P3);
 	gl::color(255, 0, 0);
 	gl::drawSolidCircle(InputXY, 5);
 
@@ -1066,8 +1066,8 @@ InputXY[0] = (float)(x); InputXY[1] = (float)(y);
 		count = contours.at(i).size();
 		x_buff = 0.0; y_buff = 0.0;
 		for (int j = 0; j < count; j++){
-			InputXY[0] = contours.at(i).at(j).x+320;
-			InputXY[1] = contours.at(i).at(j).y+230;
+			InputXY[0] = (P2-P1)*contours.at(i).at(j).x/100+P1;
+			InputXY[1] = (P4-P3)*contours.at(i).at(j).y/100+P3;
 			gl::drawSolidCircle(InputXY, 1);
 		}
 	}
