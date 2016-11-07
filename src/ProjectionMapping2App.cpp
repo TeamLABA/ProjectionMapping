@@ -70,10 +70,10 @@ const int BasicApp_N2 = 102;	//位置合わせ用
 /*fireApp*/
 const int fireApp_buff = 100;
 const float fireApp_a = (const float)0.1;
-const float fireApp_XY[2] = { (float)(640 - 170 * 2.5 *1.1/ 2 + 5)/*271*/, (float)(400 - 170 * 2.5*1.1 / 2 - 3 - 120) /*148*/ };
+const float fireApp_XY[2] = { (float)(640 - 170 * 2.5/ 2 -5)/*271*/, (float)(400 - 170 * 2.5 / 2 - 3 - 175) /*148*/ };
 //const float XY[2] = { 271, 148 };
 //const float XY[2] = { 259, 76 };
-const int fireApp_N = (int)(170*2.5*1.1);
+const int fireApp_N = (int)(170*2.5);
 
 //位置合わせしたけど動かなくなりました_fire
 
@@ -101,15 +101,16 @@ GLfloat window_no_shininess[] = { 0.0 };
 GLfloat window_index[10][3] = { { 0 - 6, 320, 240 }, { 155 - 6, 320, 5 }, { 315 - 6, 320, 240 }, { 155 - 6, 320, 475 }, { 155 - 6, 320, 240 }, { 155 - 6, 320, 240 }, { 75 - 6, 320, 240 }, { 155 - 6, 320, 120 }, { 235 - 6, 320, 240 }, { 155 - 6, 320, 360 } };
 GLfloat window_size[2][3] = { { 10, 10, 480 }, { 320, 10, 10 } };
 const int movie_size[2][2] = { { 0, 0 }, { 1350, 795 } };
+const int window_movie_size[2][2] = { { 0, 0 }, { 1350, 795 } };
 const int window_N = 100;
 
 clock_t time_start, time_end;
 
 //表示場所指定用
-int P1 = 640 - 240 + 5;	//271
-int P2 = 640 + 225 + 5;	//442
-int P3 = 400 - 260 - 3;	//148
-int P4 = 400 + 220 - 3;	//301
+int P1 = 640 - 240 + 30;	//271
+int P2 = 640 + 225 - 20;	//442
+int P3 = 400 - 260 - 10;	//148
+int P4 = 400 + 220 - 70;	//301
 
 /*Debug mode: true -> debag mode*/
 /*カメラがない場合はtrueにして実行してください*/
@@ -161,9 +162,9 @@ public:
 
 	/*fireApp*/
 	int fireColor[128][3];
-	int fireApp_pos[fireApp_N + fireApp_buff][fireApp_N];
-	int smokePos[fireApp_N + fireApp_buff][fireApp_N];
-	int seedpram[fireApp_N][fireApp_N];
+	int fireApp_pos[fireApp_N+20 + fireApp_buff][fireApp_N];
+	int smokePos[fireApp_N+20 + fireApp_buff][fireApp_N];
+	int seedpram[fireApp_N+20][fireApp_N];
 	int						mSeed;
 	int						mOctaves;
 	float					mTime;
@@ -432,7 +433,7 @@ void ProjectionMapping2App::update()
 	/*fireApp:0*/
 	if (x > px1 && y > py1 && x < px2 && y < py2){
 		if (sw == 0){
-			if (x > 0 && x < fireApp_N - fireApp_circle && y > 0 && y < fireApp_N - fireApp_circle){
+			if (x > 0 && x < fireApp_N - fireApp_circle && y > 0 && y < fireApp_N+20 - fireApp_circle){
 				fireApp_pos[int(y)][int(x)] = 0;
 				fireApp_x = (int)x;
 				fireApp_y = (int)y;
@@ -468,7 +469,7 @@ void ProjectionMapping2App::update()
 #pragma omp parallel
 			{
 #pragma omp for
-				for (int i = 0; i < fireApp_N; i++){
+				for (int i = 0; i < fireApp_N+20; i++){
 					for (int j = 0; j < fireApp_N; j++){
 						seedpram[i][j] = (int)(127 * rand() / RAND_MAX) + i / 25;
 					}
@@ -482,7 +483,7 @@ void ProjectionMapping2App::update()
 #pragma omp parallel
 			{
 #pragma omp for
-				for (int i = 0; i < fireApp_N - 2; i++){
+				for (int i = 0; i < fireApp_N+20 - 2; i++){
 					for (int j = 1; j < fireApp_N - 1; j++){
 						if (firelevel < seedpram[i][j])
 							fireApp_pos[i + fireApp_buff][j] = 120;
@@ -497,7 +498,7 @@ void ProjectionMapping2App::update()
 			{
 #pragma omp for
 				for (int i = 0; i < fireApp_N - 2 + fireApp_buff; i++){
-					for (int j = 1; j < fireApp_N - 1; j++){
+					for (int j = 1; j < fireApp_N+20 - 1; j++){
 						fireApp_pos[i][j] = (fireApp_pos[i + 1][j] + fireApp_pos[i + 2][j] + fireApp_pos[i][j] + fireApp_pos[i + 1][j - 1] + fireApp_pos[i + 1][j + 1]) / 5;
 					}
 				}
@@ -506,7 +507,7 @@ void ProjectionMapping2App::update()
 #pragma omp parallel
 			{
 #pragma omp for
-				for (int i = 0; i < fireApp_N - 2 + fireApp_buff; i++){
+				for (int i = 0; i < fireApp_N+20 - 2 + fireApp_buff; i++){
 					for (int j = 2; j < fireApp_N - 2; j++){
 						smokePos[i][j] = (smokePos[i + 1][j] + smokePos[i + 2][j] + smokePos[i][j] + smokePos[i + 1][j - 1] + smokePos[i + 1][j + 1] + smokePos[i + 1][j - 2] + smokePos[i + 1][j + 2] + smokePos[i + 2][j - 1] + smokePos[i + 2][j + 1] + smokePos[i + 2][j - 2] + smokePos[i + 2][j + 2] + 7) / 12;
 					}
@@ -803,7 +804,7 @@ void ProjectionMapping2App::draw()
 #pragma omp parallel
 		{
 #pragma omp for
-			for (int i = 0; i < fireApp_N + fireApp_buff; i += 2){
+			for (int i = 0; i < fireApp_N+20 + fireApp_buff; i += 2){
 				for (int j = 0; j < fireApp_N; j += 2){
 					gl::color(fireColor[fireApp_pos[i][j]][0] * (1 - fireApp_a) + smokePos[i][j] * fireApp_a, fireColor[fireApp_pos[i][j]][1] * (1 - fireApp_a) + smokePos[i][j] * fireApp_a, fireColor[fireApp_pos[i][j]][2] * (1 - fireApp_a) + smokePos[i][j] * fireApp_a);
 					gl::drawSolidEllipse(ci::Vec2d(fireApp_XY[0] + j, fireApp_XY[1] + i), 1.0, 1.0);
@@ -931,7 +932,7 @@ void ProjectionMapping2App::draw()
 
 		glMaterialfv(GL_FRONT, GL_EMISSION, window_mat_emission);
 
-		Rectf bounds((float)movie_size[0][0], (float)movie_size[0][1], (float)movie_size[1][0], (float)movie_size[1][1]); //movie size
+		Rectf bounds((float)window_movie_size[0][0], (float)window_movie_size[0][1], (float)window_movie_size[1][0], (float)window_movie_size[1][1]); //movie size
 		gl::enableAlphaBlending(true);
 
 		if ((!movie) || (!movie_mSurface))
@@ -1206,7 +1207,7 @@ void ProjectionMapping2App::resetup(int re_sw){
 #pragma omp parallel
 		{
 #pragma omp for
-			for (int i = 0; i < fireApp_N + fireApp_buff; i++){
+			for (int i = 0; i < fireApp_N+20 + fireApp_buff; i++){
 				for (int j = 0; j < fireApp_N; j++){
 					fireApp_pos[i][j] = 0;
 					smokePos[i][j] = 0;
