@@ -104,6 +104,15 @@ const int movie_size[2][2] = { { 0, 0 }, { 1350, 795 } };
 
 clock_t time_start, time_end;
 
+/*movie*/
+GLfloat movie_no_mat[] = { 1.0, 1.0, 1.0, 1.0 };
+GLfloat movie_mat_ambient[] = { 1.0, 1.0, 1.0, 1.0 };
+GLfloat movie_mat_diffuse[] = { 1.0, 1.0, 1.0, 1.0 };
+GLfloat movie_mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
+GLfloat movie_mat_emission[] = { 1.0, 1.0, 1.0, 1.0 };
+GLfloat movie_mat_shininess[] = { 128.0 };
+GLfloat movie_no_shininess[] = { 0.0 };
+
 //ï\é¶èÍèäéwíËóp
 int P1 = 640 - 240 + 30;	//271
 int P2 = 640 + 225 - 20;	//442
@@ -1001,12 +1010,12 @@ void ProjectionMapping2App::draw()
 		ci::ColorA color(CM_HSV, 0.7f, 0.8f, 1.0f, 1.0f);
 		glMaterialfv(GL_FRONT, GL_DIFFUSE, color);
 
-		glMaterialfv(GL_FRONT, GL_AMBIENT, window_mat_ambient);
+		glMaterialfv(GL_FRONT, GL_AMBIENT, movie_mat_ambient);
 
-		glMaterialfv(GL_FRONT, GL_SPECULAR, window_mat_specular);
-		glMaterialfv(GL_FRONT, GL_SHININESS, window_mat_shininess);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, movie_mat_specular);
+		glMaterialfv(GL_FRONT, GL_SHININESS, movie_mat_shininess);
 
-		glMaterialfv(GL_FRONT, GL_EMISSION, window_mat_emission);
+		glMaterialfv(GL_FRONT, GL_EMISSION, movie_mat_emission);
 
 		Rectf bounds((float)movie_size[0][0], (float)movie_size[0][1], (float)movie_size[1][0], (float)movie_size[1][1]); //movie size
 		gl::enableAlphaBlending(true);
