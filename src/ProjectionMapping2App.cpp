@@ -370,10 +370,9 @@ void ProjectionMapping2App::update()
 	/*BasicApp:1*/
 //	if (x > px1 && y > py1 && x < px2 && y < py2){
 		if (sw == 1){
-
-			int x1 = (int)(x / 6);
-			int y1 = (int)(y / 6);
-			if (x1 > 2 && x1 < BasicApp_N - 3 && y1 > 2 && y1 < BasicApp_N - 3){
+			int x1 = (int)(x * BasicApp_N2 / 100);
+			int y1 = (int)(y * BasicApp_N / 100);
+			if (x1 > 2 && x1 < BasicApp_N2 - 3 && y1 > 2 && y1 < BasicApp_N - 3){
 
 #pragma omp parallel
 					{
@@ -386,9 +385,7 @@ void ProjectionMapping2App::update()
 						}
 					}
 			}
-		}
-//	}
-	if (sw == 1){
+
 		//random wave
 		if (wave % 3 == 0){
 			int rndX = randInt(5, BasicApp_N2 - 5);
@@ -437,10 +434,10 @@ void ProjectionMapping2App::update()
 //	if (x > px1 && y > py1 && x < px2 && y < py2){
 
 		if (sw == 0){
+			fireApp_x = (int)(x*fireApp_N / 100);
+			fireApp_y = (int)(y*fireApp_N / 100);
 			if (x > 0 && x < fireApp_N - fireApp_circle && y > 0 && y < fireApp_N+20 - fireApp_circle){
 				fireApp_pos[int(y)][int(x)] = 0;
-				fireApp_x = (int)x;
-				fireApp_y = (int)y;
 
 #pragma omp parallel
 				{
@@ -466,11 +463,9 @@ void ProjectionMapping2App::update()
 					}
 				}
 			}
-		}
 
 	//}
 	//各点(0,0)~(300,300)の火種を配置
-	if (sw == 0){
 #pragma omp parallel
 			{
 #pragma omp for
@@ -568,13 +563,12 @@ void ProjectionMapping2App::update()
 	}
 
 	/*TurnCubeApp:3*/
-//	if (x > px1 && y > py1 && x < px2 && y < py2){
-		if (sw == 3){
+	if (sw == 3){
+		if (x > 0 && y > 0 && x < 100 && y < 100){
 			TurnCube_x = (int)x;
 			TurnCube_y = (int)y;
 		}
-//	}
-	if (sw == 3){
+
 		if (TurnCube_f == 0){
 			if ((TurnCube_x < 270 || TurnCube_y < 150) || (TurnCube_x > 440 || TurnCube_y > 300)){
 				TurnCube_f = 2;
@@ -622,13 +616,12 @@ void ProjectionMapping2App::update()
 	}
 
 	/*Shabon:4*/
-//	if (x > px1 && y > py1 && x < px2 && y < py2){
-		if (sw == 4){
+	if (sw == 4){
+		if (x > 0 && y > 0 && x < 100 && y < 100){
 			Shabon_x = int(x);
 			Shabon_y = int(y);
 		}
-//	}
-	if (sw == 4){
+
 		for (int i = 0; i < Shabon_N; i++){
 			Shabon_a = sqrt((Shabon_kyu[i][0][0] - Shabon_x)*(Shabon_kyu[i][0][0] - Shabon_x) + (Shabon_kyu[i][0][1] - Shabon_y)*(Shabon_kyu[i][0][1] - Shabon_y) + (Shabon_kyu[i][0][2] - Shabon_z)*(Shabon_kyu[i][0][2] - Shabon_z));
 
@@ -649,13 +642,11 @@ void ProjectionMapping2App::update()
 	}
 
 	/*window:2*/
-//	if (x > px1 && y > py1 && x < px2 && y < py2){
-		if (sw == 2){
+	if (sw == 2){
+		if (x > 0 && y > 0 && x < 100 && y < 100){
 			window_flag = 1;
 		}
-//	}
 
-	if (sw == 2){
 		window_r += window_flag * 2;
 		if (window_r > 110){
 			window_cnt++;
@@ -678,13 +669,12 @@ void ProjectionMapping2App::update()
 	}
 
 	/*soul:5*/
-//	if (x > px1 && y > py1 && x < px2 && y < py2){
-		if (sw == 5){
+	if (sw == 5){	
+		if (x > 0 && y > 0 && x < 100 && y < 100){
 			soul_x = (int)x;
 			soul_y = (int)y;
 		}
-//	}
-	if (sw == 5){
+
 		soul_input[0] = (float)soul_x;	soul_input[1] = (float)soul_y;
 		if (soul_PosX == xyLeftUp[0] && soul_PosY == xyLeftUp[1]){
 			soul_Count = (int)(xyRightDown[0] - xyLeftUp[0] + 1);
