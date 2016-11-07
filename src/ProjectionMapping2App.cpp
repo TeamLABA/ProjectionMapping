@@ -98,11 +98,9 @@ GLfloat window_mat_emission[] = { 0.5, 0.5, 0.5, 1.0 };//{ 0, 0, 0, 0 };//{ 0.0,
 GLfloat window_mat_shininess[] = { 128.0 };
 GLfloat window_no_shininess[] = { 0.0 };
 
-GLfloat window_index[10][3] = { { 0 - 6, 320, 240 }, { 155 - 6, 320, 5 }, { 315 - 6, 320, 240 }, { 155 - 6, 320, 475 }, { 155 - 6, 320, 240 }, { 155 - 6, 320, 240 }, { 75 - 6, 320, 240 }, { 155 - 6, 320, 120 }, { 235 - 6, 320, 240 }, { 155 - 6, 320, 360 } };
-GLfloat window_size[2][3] = { { 10, 10, 480 }, { 320, 10, 10 } };
+GLfloat window_index[10][3] = { { 0 - 6, 320, 210 }, { 85 - 6, 320, 27 }, { 168 - 6, 320, 210 }, { 85 - 6, 320, 393 }, { 85 - 6, 320, 210 }, { 85 - 6, 320, 210 }, {43 - 6, 320, 210 }, { 85 - 6, 320, 128 }, { 127 - 6, 320, 210 }, { 85 - 6, 320, 302 } };
+GLfloat window_size[2][3] = { { 10, 10, 376 }, { 165, 10, 10 } };
 const int movie_size[2][2] = { { 0, 0 }, { 1350, 795 } };
-const int window_movie_size[2][2] = { { 0, 0 }, { 1350, 795 } };
-const int window_N = 100;
 
 clock_t time_start, time_end;
 
@@ -431,7 +429,7 @@ void ProjectionMapping2App::update()
 	}
 
 	/*fireApp:0*/
-	if (x > px1 && y > py1 && x < px2 && y < py2){
+	//if (x > px1 && y > py1 && x < px2 && y < py2){
 		if (sw == 0){
 			if (x > 0 && x < fireApp_N - fireApp_circle && y > 0 && y < fireApp_N+20 - fireApp_circle){
 				fireApp_pos[int(y)][int(x)] = 0;
@@ -463,7 +461,7 @@ void ProjectionMapping2App::update()
 				}
 			}
 		}
-	}
+	//}
 	//各点(0,0)~(300,300)の火種を配置
 	if (sw == 0){
 #pragma omp parallel
@@ -652,9 +650,9 @@ void ProjectionMapping2App::update()
 
 	if (sw == 2){
 		window_r += window_flag * 2;
-		if (window_r > 125){
+		if (window_r > 110){
 			window_cnt++;
-			window_r = 125;
+			window_r = 110;
 		}
 		if (window_cnt > 50){
 			window_flag *= -1;
@@ -932,7 +930,7 @@ void ProjectionMapping2App::draw()
 
 		glMaterialfv(GL_FRONT, GL_EMISSION, window_mat_emission);
 
-		Rectf bounds((float)window_movie_size[0][0], (float)window_movie_size[0][1], (float)window_movie_size[1][0], (float)window_movie_size[1][1]); //movie size
+		Rectf bounds((float)416, (float)42, (float)1097, (float)745); //movie size
 		gl::enableAlphaBlending(true);
 
 		if ((!movie) || (!movie_mSurface))
@@ -951,9 +949,9 @@ void ProjectionMapping2App::draw()
 #pragma omp for
 			for (int i = 0; i < 10; i++){
 				glPushMatrix();
-				glTranslated(0, 320, 240);
+				glTranslated(313, 320, 0);
 				glRotated(-window_r, 0, 0, 1);
-				glTranslated(0, -320, -240);
+				glTranslated(5, -320, 0);
 				if (i < 6)
 					gl::drawCube(ci::Vec3f(window_index[i]), ci::Vec3f(window_size[i % 2][0] + 5, window_size[i % 2][1] + 2, window_size[i % 2][2] + 5));
 				else gl::drawCube(ci::Vec3f(window_index[i]), ci::Vec3f(window_size[i % 2]));
@@ -967,12 +965,12 @@ void ProjectionMapping2App::draw()
 #pragma omp for
 			for (int i = 0; i < 10; i++){
 				glPushMatrix();
-				glTranslated(640 + 5, 320, 240);
+				glTranslated(658 + 5, 320, 0);
 				glRotated(window_r, 0, 0, 1);
-				glTranslated(-640 - 5, -320, -240);
+				glTranslated(0 - 5, -320, 0);
 				if (i < 6)
-					gl::drawCube(ci::Vec3f(640 - window_index[i][0], window_index[i][1], window_index[i][2]), ci::Vec3f(window_size[i % 2][0] + 5, window_size[i % 2][1] + 2, window_size[i % 2][2] + 5));
-				gl::drawCube(ci::Vec3f(640 - window_index[i][0], window_index[i][1], window_index[i][2]), ci::Vec3f(window_size[i % 2]));
+					gl::drawCube(ci::Vec3f( - window_index[i][0], window_index[i][1], window_index[i][2]), ci::Vec3f(window_size[i % 2][0] + 5, window_size[i % 2][1] + 2, window_size[i % 2][2] + 5));
+				gl::drawCube(ci::Vec3f( - window_index[i][0], window_index[i][1], window_index[i][2]), ci::Vec3f(window_size[i % 2]));
 				glPopMatrix();
 			}
 		}
@@ -1266,8 +1264,8 @@ void ProjectionMapping2App::resetup(int re_sw){
 
 	/*window:2*/
 	else if (re_sw == 2){
-		cam.setEyePoint(ci::Vec3f(320, 700, 240));
-		cam.setCenterOfInterestPoint(ci::Vec3f(320, 0, 240));
+		cam.setEyePoint(ci::Vec3f(320 + 170, 700, 240 - 10));
+		cam.setCenterOfInterestPoint(ci::Vec3f(320 + 170, 0, 240 - 10));
 		cam.setPerspective(80.0f, getWindowAspectRatio(), 1.0f, 700.0f);
 		mMayaCam.setCurrentCam(cam);
 
@@ -1367,6 +1365,9 @@ void ProjectionMapping2App::keyDown(KeyEvent event)
 			sw = event.getChar() - 48;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
 			console() << "スイッチ：" << app_name[sw] << endl;
 			resetup(sw);
+		}
+		else if (event.getChar() == 'w'){
+			window_flag = 1;
 		}
 	}
 }
