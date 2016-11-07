@@ -287,7 +287,7 @@ void ProjectionMapping2App::setup()
 	}
 
 
-	sw = 6;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
+	sw = 3;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
 	avi = 0;	//movie 1:fire_water, 2:water_window, 0:openingMovie.mp4, 4:widow_TurnCube, 5:TurnCube_Shabon
 	setFullScreen(!isFullScreen());
 	resetup(sw);
@@ -562,54 +562,33 @@ void ProjectionMapping2App::update()
 
 	/*TurnCubeApp:3*/
 	if (sw == 3){
-		if (x > 0 && y > 0 && x < 100 && y < 100){
-			TurnCube_x = (int)x;
-			TurnCube_y = (int)y;
-		}
+		
+		TurnCube_x = (int)(P2-P1)*x/100+P1;
+		TurnCube_y = (int)(P4-P3)*y/100+P3;
 
 		if (TurnCube_f == 0){
-			if ((TurnCube_x < P1 || TurnCube_y < P3) || (TurnCube_x > P2 || TurnCube_y > P4)){
+			if (TurnCube_x > 0 && TurnCube_y > 0 && TurnCube_x < 100 && TurnCube_y < 100){
 				TurnCube_f = 2;
-			}
-			else{
-				TurnCube_f = 0;
 			}
 		}
 		else if (TurnCube_f == 1){
-			if (TurnCube_kaiten <= TurnCube_px){
-				if (TurnCube_speed < 1){
-					TurnCube_mCubeRotation.rotate(ci::Vec3f(0, TurnCube_houkou, 0), (float)(TurnCube_speed / (2 * M_PI))); //‰ñ“]
-					TurnCube_speed += (float)0.01;
-				}
-				else{
-					TurnCube_mCubeRotation.rotate(ci::Vec3f(0, TurnCube_houkou, 0), (float)(TurnCube_speed / (2 * M_PI))); //‰ñ“]
-					TurnCube_kaiten++;
-				}
-			}
-			else if (TurnCube_kaiten > TurnCube_px && TurnCube_kaiten <= 100 + TurnCube_px){
-				TurnCube_mCubeRotation.rotate(ci::Vec3f(0, TurnCube_houkou, 0), (float)(TurnCube_speed / (2 * M_PI))); //‰ñ“]
-				TurnCube_speed -= (float)0.01;
-				TurnCube_kaiten++;
+			if (TurnCube_speed < 360){
+				TurnCube_speed += 5;
 			}
 			else{
-				if ((TurnCube_x < P1 || TurnCube_y < P3) || (TurnCube_x > P2 || TurnCube_y > P4)){
-					TurnCube_f = 2;
-					TurnCube_kaiten = 0;
-				}
-				else{
-					TurnCube_f = 1;
-				}
+				TurnCube_f == 0;
+				TurnCube_speed=0;
 			}
+			//TurnCube_mCubeRotation.rotate(ci::Vec3f(0, TurnCube_houkou, 0), 0);//(float)TurnCube_speed *M_PI/180); //‰ñ“]
 		}
 		else if (TurnCube_f == 2){
-			if ((TurnCube_x > P1 && TurnCube_y > P3) && (TurnCube_x < P2 / 2 && TurnCube_y < P4)){
-				TurnCube_f = 1;
+			if (TurnCube_x > 0 && TurnCube_y > 0 && TurnCube_x < 100/2 && TurnCube_y < 100){
 				TurnCube_houkou = 1;
 			}
-			else if ((TurnCube_x >= P2 / 2 && TurnCube_y > P3) && (TurnCube_x < P2 && TurnCube_y < P4)){
-				TurnCube_f = 1;
+			else if (TurnCube_x > 50 && TurnCube_y > 0 && TurnCube_x < 100  && TurnCube_y < 100){
 				TurnCube_houkou = -1;
 			}
+			TurnCube_f = 1;
 		}
 	}
 
@@ -856,9 +835,8 @@ void ProjectionMapping2App::draw()
 
 		TurnCube_mTexture.bind();
 		glPushMatrix();
-		if (TurnCube_speed != 0){
-			gl::multModelView(TurnCube_mCubeRotation);
-		}
+		glRotated(TurnCube_speed, 0, 1, 0);
+		gl::multModelView(TurnCube_mCubeRotation);
 
 		gl::drawCube(ci::Vec3f(0, 0, 0), ci::Vec3f((float)(228 * 0.454), (float)(230 * 0.454), 0.05f));
 		glPopMatrix();
@@ -1233,6 +1211,8 @@ void ProjectionMapping2App::resetup(int re_sw){
 		cam.setPerspective(60.0f, getWindowAspectRatio(), 1.0f, 200.0f);
 		mMayaCam.setCurrentCam(cam);
 
+		TurnCube_mCubeRotation.setToIdentity();
+
 		//setWindowSize(1000, 800);
 		glEnable(GL_TEXTURE_2D);
 		gl::enableDepthRead();
@@ -1365,6 +1345,8 @@ void ProjectionMapping2App::keyDown(KeyEvent event)
 		}
 		else if (event.getChar() == 'w'){
 			window_flag = 1;
+			TurnCube_f = 1;
+			TurnCube_houkou = -1;
 		}
 	}
 }
