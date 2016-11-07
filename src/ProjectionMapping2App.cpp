@@ -516,8 +516,8 @@ void ProjectionMapping2App::update()
 	}
 
 	/*PenkiApp:6*/
-//	if (x > px1 && y > py1 && x < px2 && y < py2){
-		if (sw == 6){
+	if (sw == 6){
+		if (x > 0 && y > 0 && x < 100 && y < 100){
 			using normal = std::normal_distribution<float>;
 			using uniform = std::uniform_real_distribution<float>;
 
@@ -526,8 +526,8 @@ void ProjectionMapping2App::update()
 				obj.life = normal(0.4f, 0.2f)(mt);
 				float dx = uniform(-3.0f, 3.0f)(mt);
 				float dy = uniform(-3.0f, 3.0f)(mt);
-				obj.PenkiApp_pos.x = x + dx;
-				obj.PenkiApp_pos.y = y + dy;
+				obj.PenkiApp_pos.x = (P3 - P1)*x / 100 + dx + P1;
+				obj.PenkiApp_pos.y = (P4 - P2)*y / 100 + dy + P2;
 				obj.radius = normal(10.0f, 7.0f - (abs(dx) + abs(dy)))(mt);
 				float r = uniform(0.8f, 1.0f)(mt);
 				float g = uniform(0.2f, 0.5f)(mt);
@@ -537,8 +537,6 @@ void ProjectionMapping2App::update()
 				waterdrops.push_back(obj);
 			}
 		}
-//	}
-	if (sw == 6){
 		std::list<Waterdrop> appends;
 		for (auto& obj : waterdrops){
 			if (obj.end){
