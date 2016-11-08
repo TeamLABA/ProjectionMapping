@@ -48,6 +48,15 @@
 
 #include<windows.h>
 
+/*audio*/
+#include "cinder/audio/Source.h"
+#include "cinder/audio/Context.h"
+#include "cinder/audio/Voice.h"
+#include "cinder/Timeline.h"
+
+#include "Resources.h"
+//#define BGM "C:\\cinder_0.8.6_vc2013\\projects\\ProjectionMapping\\assets\\o14.mp3"
+
 using namespace ci;
 using namespace ci::app;
 using namespace std;
@@ -267,6 +276,13 @@ public:
 	list<Waterdrop> waterdrops;
 	mt19937 mt;
 	normal_distribution<float> norm;
+
+	/*audio*/
+	void prepareSettings(Settings *settings){ settings->enableMultiTouch(false); }
+//	audio::VoiceSamplePlayerNodeRef mVoice;
+	audio::VoiceRef mVoice;
+	float BGM_volume;
+	float BGM_pan;
 };
 
 void ProjectionMapping2App::setup()
@@ -291,6 +307,14 @@ void ProjectionMapping2App::setup()
 	avi = 0;	//movie 1:fire_water, 2:water_window, 0:openingMovie.mp4, 4:widow_TurnCube, 5:TurnCube_Shabon
 	setFullScreen(!isFullScreen());
 	resetup(sw);
+
+	/*audio*/
+	mVoice = audio::Voice::create(audio::load(loadResource( RES_DRAIN_OGG )));
+	BGM_volume = 1.0;
+	BGM_pan = 1.0;
+	mVoice->setVolume(BGM_volume);
+	mVoice->setPan(BGM_pan);
+	mVoice->start();
 }
 
 void ProjectionMapping2App::mouseDrag(MouseEvent event)
@@ -694,6 +718,7 @@ void ProjectionMapping2App::update()
 
 void ProjectionMapping2App::draw()
 {
+	/*audio*/
 
 	//	time_start = clock();
 
