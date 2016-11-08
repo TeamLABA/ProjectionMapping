@@ -55,7 +55,6 @@
 #include "cinder/Timeline.h"
 
 #include "Resources.h"
-//#define BGM "C:\\cinder_0.8.6_vc2013\\projects\\ProjectionMapping\\assets\\o14.mp3"
 
 using namespace ci;
 using namespace ci::app;
@@ -279,7 +278,6 @@ public:
 
 	/*audio*/
 	void prepareSettings(Settings *settings){ settings->enableMultiTouch(false); }
-//	audio::VoiceSamplePlayerNodeRef mVoice;
 	audio::VoiceRef mVoice;
 	float BGM_volume;
 	float BGM_pan;
@@ -309,7 +307,9 @@ void ProjectionMapping2App::setup()
 	resetup(sw);
 
 	/*audio*/
-	mVoice = audio::Voice::create(audio::load(loadResource( RES_DRAIN_OGG )));
+	audio::SourceFileRef sourceFile = audio::load(loadAsset("o14.mp3"));
+	mVoice = mVoice = audio::Voice::create( sourceFile );
+
 	BGM_volume = 1.0;
 	BGM_pan = 1.0;
 	mVoice->setVolume(BGM_volume);
