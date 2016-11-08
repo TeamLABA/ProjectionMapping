@@ -208,11 +208,12 @@ public:
 	gl::Texture TurnCube_mTexture;
 	Matrix44f TurnCube_mCubeRotation;
 	int TurnCube_x, TurnCube_y;
-	int TurnCube_f = 2;
+	int TurnCube_f = 0;
 	float TurnCube_kaiten = 0;
 	float TurnCube_houkou = 0;
 	float TurnCube_speed = 0;
-	int TurnCube_px = 15;
+	float TurnCube_a = 0;
+	//int TurnCube_px = 15;
 	bool TurnCube_DIFFUSE;
 	bool TurnCube_AMBIENT;
 	bool TurnCube_SPECULAR;
@@ -596,12 +597,24 @@ void ProjectionMapping2App::update()
 			}
 		}
 		else if (TurnCube_f == 1){
-			if (TurnCube_speed < 360){
-				TurnCube_speed += 5;
+			if (TurnCube_speed < 360*3){
+				TurnCube_speed += TurnCube_a;
+				TurnCube_a += 0.1;
+			}
+			else if (TurnCube_speed >= 360 * 3 && TurnCube_speed < 360*6){
+				TurnCube_speed += TurnCube_a;
+				TurnCube_a -= 0.1;
 			}
 			else{
-				TurnCube_f == 0;
-				TurnCube_speed=0;
+				if (TurnCube_x < 0 || TurnCube_y < 0 || TurnCube_x > 100 || TurnCube_y > 100){
+					TurnCube_f = 0;
+					TurnCube_speed = 0;
+					TurnCube_a = 0;
+				}
+				else{
+					TurnCube_speed = 0;
+					TurnCube_a = 0;
+				}
 			}
 			//TurnCube_mCubeRotation.rotate(ci::Vec3f(0, TurnCube_houkou, 0), 0);//(float)TurnCube_speed *M_PI/180); //回転
 		}
@@ -860,7 +873,7 @@ void ProjectionMapping2App::draw()
 
 		TurnCube_mTexture.bind();
 		glPushMatrix();
-		glRotated(TurnCube_speed, 0, 1, 0);
+		glRotated(TurnCube_speed, 0, TurnCube_houkou, 0);
 		gl::multModelView(TurnCube_mCubeRotation);
 
 		gl::drawCube(ci::Vec3f(0, 0, 0), ci::Vec3f((float)(228 * 0.454), (float)(230 * 0.454), 0.05f));
@@ -1362,16 +1375,16 @@ void ProjectionMapping2App::keyDown(KeyEvent event)
 	if (event.getChar() == 'f' || event.getChar() == 'F'){
 		setFullScreen(!isFullScreen());
 	}
+	else if (event.getChar() == 'w'){
+		window_flag = 1;
+		TurnCube_f = 1;
+		TurnCube_houkou = -1;
+	}
 	if (debag){
 		if (event.getChar() >= '0' && event.getChar() <= '7'){
 			sw = event.getChar() - 48;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
 			console() << "スイッチ：" << app_name[sw] << endl;
 			resetup(sw);
-		}
-		else if (event.getChar() == 'w'){
-			window_flag = 1;
-			TurnCube_f = 1;
-			TurnCube_houkou = -1;
 		}
 	}
 }
