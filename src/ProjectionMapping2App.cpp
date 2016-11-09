@@ -296,7 +296,7 @@ void ProjectionMapping2App::setup()
 		}
 	}
 
-	sw = 7;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
+	sw = 5;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
 
 	avi = 0;	//movie 1:fire_water, 2:water_window, 0:openingMovie.mp4, 4:widow_TurnCube, 5:TurnCube_Shabon
 	setFullScreen(!isFullScreen());
@@ -365,6 +365,8 @@ void ProjectionMapping2App::setup()
 	xyLeftUp[1] = (float)P3;
 	xyRightDown[0] = (float)P2;
 	xyRightDown[1] = (float)P4;
+	soul_PosX = (int)xyLeftUp[0];
+	soul_PosY = (int)xyLeftUp[1];
 
 	/*audio*/
 	audio::SourceFileRef sourceFile = audio::load(loadAsset("o14.mp3"));
