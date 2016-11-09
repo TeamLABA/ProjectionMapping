@@ -298,7 +298,7 @@ void ProjectionMapping2App::setup()
 
 	sw = 0;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
 
-	avi = 0;	//movie 1:fire_water, 2:water_window, 0:openingMovie.mp4, 4:widow_TurnCube, 5:TurnCube_Shabon
+	avi = 0;	//movie 1:fire_water, 2:water_window, 0:openingMovie.mp4, 3:widow_TurnCube, 4:TurnCube_Shabon, 5~6:load, 7:endroll
 	setFullScreen(!isFullScreen());
 	resetup(sw);
 
@@ -369,7 +369,7 @@ void ProjectionMapping2App::setup()
 	soul_PosY = (int)xyLeftUp[1];
 
 	/*audio*/
-	audio::SourceFileRef sourceFile = audio::load(loadAsset("o14.mp3"));
+	audio::SourceFileRef sourceFile = audio::load(loadAsset("Stream.mp3"));
 	mVoice = audio::Voice::create( sourceFile );
 
 	BGM_volume = 1.0;
@@ -1264,7 +1264,7 @@ void ProjectionMapping2App::resetup(int re_sw){
 		mMayaCam.setCurrentCam(cam);
 
 		if (avi == 1){
-			fs::path avi_moviePath("C:\\cinder_0.8.6_vc2013\\projects\\ProjectionMapping\\resources\\fire_water.avi");
+			fs::path avi_moviePath("C:\\cinder_0.8.6_vc2013\\projects\\ProjectionMapping\\resources\\fire_water2.mp4");
 			if (!avi_moviePath.empty())
 				loadMovieFile(avi_moviePath);
 		}
@@ -1289,17 +1289,17 @@ void ProjectionMapping2App::resetup(int re_sw){
 				loadMovieFile(avi_moviePath);
 		}
 		else if (avi == 5){
-			fs::path avi_moviePath("C:\\cinder_0.8.6_vc2013\\projects\\ProjectionMapping\\resources\\TurnCube_Shabon.mp4");
+			fs::path avi_moviePath("C:\\cinder_0.8.6_vc2013\\projects\\ProjectionMapping\\resources\\load.mp4");
 			if (!avi_moviePath.empty())
 				loadMovieFile(avi_moviePath);
 		}
 		else if (avi == 6){
-			fs::path avi_moviePath("C:\\cinder_0.8.6_vc2013\\projects\\ProjectionMapping\\resources\\TurnCube_Shabon.mp4");
+			fs::path avi_moviePath("C:\\cinder_0.8.6_vc2013\\projects\\ProjectionMapping\\resources\\load.mp4");
 			if (!avi_moviePath.empty())
 				loadMovieFile(avi_moviePath);
 		}
 		else if (avi == 7){
-			fs::path avi_moviePath("C:\\cinder_0.8.6_vc2013\\projects\\ProjectionMapping\\resources\\TurnCube_Shabon.mp4");
+			fs::path avi_moviePath("C:\\cinder_0.8.6_vc2013\\projects\\ProjectionMapping\\resources\\endroll.mp4");
 			if (!avi_moviePath.empty())
 				loadMovieFile(avi_moviePath);
 		}
