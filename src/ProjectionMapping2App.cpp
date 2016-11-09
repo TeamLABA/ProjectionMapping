@@ -310,20 +310,20 @@ void ProjectionMapping2App::setup()
 
 	/*fire*/
 	fireApp_x = fireApp_y = 0;
-	for (int i = 0; i < 32; i++){
-		fireColor[i][0] = i * 8;
+	for (int i = 0; i < 64; i++){
+		fireColor[i][0] = i * 4;
 		fireColor[i][1] = 0;
 		fireColor[i][2] = 0;
 	}
-	for (int i = 32; i < 64; i++){
+	for (int i = 64; i < 80; i++){
 		fireColor[i][0] = 255;
-		fireColor[i][1] = (i - 32) * 8;
+		fireColor[i][1] = (i - 64) * 16;
 		fireColor[i][2] = 0;
 	}
-	for (int i = 64; i < 128; i++){
+	for (int i = 80; i < 128; i++){
 		fireColor[i][0] = 255;
 		fireColor[i][1] = 255;
-		fireColor[i][2] = (i - 64) * 4;
+		fireColor[i][2] = (i - 80) * 5;
 	}
 	mSeed = clock() & 65535;
 	mOctaves = 4;
@@ -512,18 +512,18 @@ void ProjectionMapping2App::update()
 #pragma omp parallel
 				{
 #pragma omp for
-					for (int i = 0; i < fireApp_circle / 2; i++){
-						for (int j = 0; j < fireApp_circle - (fireApp_circle / 2 - i)*(fireApp_circle / 2 - i) * 2 / (fireApp_circle / 2); j++){
-							smokePos[fireApp_y + i + fireApp_buff][fireApp_x + (fireApp_circle / 2 * 2) - fireApp_circle + ((fireApp_circle / 2 - i)*(fireApp_circle / 2 - i) / (fireApp_circle / 2)) + j] = 100;
+					for (int i = 0; i < fireApp_circle / 2; i+=2){
+						for (int j = 0; j < fireApp_circle - (fireApp_circle / 2 - i)*(fireApp_circle / 2 - i) * 2 / (fireApp_circle / 2); j+=2){
+							smokePos[fireApp_y + i + fireApp_buff][fireApp_x + (fireApp_circle / 2 * 2) - fireApp_circle + ((fireApp_circle / 2 - i)*(fireApp_circle / 2 - i) / (fireApp_circle / 2)) + j] = 50;
 						}
 					}
 				}
 #pragma omp parallel
 				{
 #pragma omp for
-					for (int i = 0; i < fireApp_circle / 2; i++){
-						for (int j = 0; j < fireApp_circle - (fireApp_circle / 2 - i)*(fireApp_circle / 2 - i) * 2 / (fireApp_circle / 2); j++){
-							smokePos[fireApp_y + fireApp_circle - 1 - i + fireApp_buff][fireApp_x + (fireApp_circle / 2 * 2) - fireApp_circle + ((fireApp_circle / 2 - i)*(fireApp_circle / 2 - i) / (fireApp_circle / 2)) + j] = 100;
+					for (int i = 0; i < fireApp_circle / 2; i+=2){
+						for (int j = 0; j < fireApp_circle - (fireApp_circle / 2 - i)*(fireApp_circle / 2 - i) * 2 / (fireApp_circle / 2); j+=2){
+							smokePos[fireApp_y + fireApp_circle - 1 - i + fireApp_buff][fireApp_x + (fireApp_circle / 2 * 2) - fireApp_circle + ((fireApp_circle / 2 - i)*(fireApp_circle / 2 - i) / (fireApp_circle / 2)) + j] = 50;
 						}
 					}
 				}
