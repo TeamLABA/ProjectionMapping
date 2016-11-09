@@ -84,10 +84,9 @@ const int BasicApp_N2 = 102;	//位置合わせ用
 /*fireApp*/
 const int fireApp_buff = 100;
 const float fireApp_a = (const float)0.1;
-const float fireApp_XY[2] = { (float)(640 - 170 * 2.5/ 2 -5)/*271*/, (float)(400 - 170 * 2.5 / 2 - 3 - 175) /*148*/ };
-//const float XY[2] = { 271, 148 };
-//const float XY[2] = { 259, 76 };
-const int fireApp_N = (int)(170*2.5);
+const float fireApp_XY[2] = { (float)(422)/*271*/, (float)(9) /*148*/ };
+const int fireApp_N = (int)(425);
+const int fireApp_N2 = (int)(445);
 
 //位置合わせしたけど動かなくなりました_fire
 
@@ -135,7 +134,7 @@ int P4 = 400 + 220 - 70;	//301
 
 /*Debug mode: true -> debag mode*/
 /*カメラがない場合はtrueにして実行してください*/
-bool debag = false;
+bool debag = true;
 
 /*切り替えるスイッチの数*/
 const int sw_num = 8;
@@ -156,9 +155,6 @@ public:
 
 	double clock_time = 0;
 	double ch_time = 0;
-
-	/*BasicApp*/
-	//void drawGrid(float size = 100.0f, float step = 10.0f);
 
 	/*camera_ctApp*/
 	int mouseX, mouseY;
@@ -185,16 +181,16 @@ public:
 
 	/*fireApp*/
 	int fireColor[128][3];
-	int fireApp_pos[fireApp_N+20 + fireApp_buff][fireApp_N];
-	int smokePos[fireApp_N+20 + fireApp_buff][fireApp_N];
-	int seedpram[fireApp_N+20][fireApp_N];
+	int fireApp_pos[fireApp_N2 + fireApp_buff][fireApp_N];
+	int smokePos[fireApp_N2 + fireApp_buff][fireApp_N];
+	int seedpram[fireApp_N2][fireApp_N];
 	int						mSeed;
 	int						mOctaves;
 	float					mTime;
 	Perlin					mPerlin;
 	float					mFrequency;
 	int fireApp_x, fireApp_y;
-	int fireApp_circle;
+	int fireApp_circle=50;
 
 
 	/*PenkiApp*/
@@ -262,7 +258,6 @@ public:
 	float BasicApp_pos[2][BasicApp_N2][BasicApp_N];
 	MayaCamUI mMayaCam;
 	CameraPersp cam;
-
 
 	//private:
 	/*PenkiApp*/
@@ -334,12 +329,6 @@ void ProjectionMapping2App::update()
 	clock_time = time_end - time_start;
 	ch_time = clock_time / CLOCKS_PER_SEC;
 
-	//console() << "time:" << (double)(time_end - time_start) / CLOCKS_PER_SEC << "[sec]" << endl;
-
-	//if (ch_time > 100.0){
-	//	resetup(++sw%sw_num);
-	//}
-
 	if (ch_time >= elapsed_time&&sw!=7){
 		sw = 7;
 		resetup(sw);
@@ -383,17 +372,12 @@ void ProjectionMapping2App::update()
 				}
 			}
 		}
-	}
-	
-	x = 100 * (bx - camera_X1)/(camera_X2-camera_X1);
-	y = 100 * (by - camera_Y1)/(camera_Y2-camera_Y1);
 
-	//time_end = clock();
-	//console() << "cam:"<<(double)(time_end - time_start) / CLOCKS_PER_SEC <<"[sec]"<< endl;
-	//time_start = clock();
+		x = 100 * (bx - camera_X1) / (camera_X2 - camera_X1);
+		y = 100 * (by - camera_Y1) / (camera_Y2 - camera_Y1);
+	}
 
 	/*BasicApp:1*/
-//	if (x > px1 && y > py1 && x < px2 && y < py2){
 		if (sw == 1){
 			int x1 = (int)(x * BasicApp_N2 / 100);
 			int y1 = (int)(y * BasicApp_N / 100);
@@ -405,7 +389,6 @@ void ProjectionMapping2App::update()
 						for (int i = -2; i <= 2; i++){
 							for (int j = -2; j <= 2; j++){
 								BasicApp_pos[0][x1 + i][y1 + j] = 50 - BasicApp_N / 5;
-								//cout << "x:" << x1 << "y:" << y1 << endl;
 							}
 						}
 					}
@@ -449,20 +432,18 @@ void ProjectionMapping2App::update()
 				for (int i = 1; i < BasicApp_N2 - 1; i++){
 					for (int j = 1; j < BasicApp_N - 1; j++){
 						BasicApp_pos[0][i][j] += BasicApp_pos[1][i][j];
-						//mesh.appendVertex(Vec3f(i, pos[0][i][j], j));
 					}
 				}
 			}
 	}
 
 	/*fireApp:0*/
-//	if (x > px1 && y > py1 && x < px2 && y < py2){
-
 		if (sw == 0){
 			fireApp_x = (int)(x*fireApp_N / 100);
-			fireApp_y = (int)(y*fireApp_N / 100);
-			if (x > 0 && x < fireApp_N - fireApp_circle && y > 0 && y < fireApp_N+20 - fireApp_circle){
-				fireApp_pos[int(y)][int(x)] = 0;
+			fireApp_y = (int)(y*fireApp_N2/ 100);
+			if ((fireApp_x > fireApp_circle) && (fireApp_x < fireApp_N - fireApp_circle) && (fireApp_y > 0) && (fireApp_y < fireApp_N2 - fireApp_circle)){
+				fireApp_pos[int(fireApp_y)][int(fireApp_x)] = 0;
+				console() << "smoke:" <<fireApp_y<<" "<<fireApp_x<< endl;
 
 #pragma omp parallel
 				{
@@ -473,11 +454,6 @@ void ProjectionMapping2App::update()
 						}
 					}
 				}
-				//for (int i = 0; i < y; i++){
-				//	for (int j = 0; j < circle; j++){
-				//		pos[i][x+j] = 0;
-				//	}
-				//}
 #pragma omp parallel
 				{
 #pragma omp for
@@ -489,12 +465,11 @@ void ProjectionMapping2App::update()
 				}
 			}
 
-	//}
 	//各点(0,0)~(300,300)の火種を配置
 #pragma omp parallel
 			{
 #pragma omp for
-				for (int i = 0; i < fireApp_N+20; i++){
+				for (int i = 0; i < fireApp_N2; i++){
 					for (int j = 0; j < fireApp_N; j++){
 						seedpram[i][j] = (int)(127 * rand() / RAND_MAX) + i / 25;
 					}
@@ -502,13 +477,13 @@ void ProjectionMapping2App::update()
 			}
 
 			//火種が発火する閾値
-			int firelevel = 126;	//28
+			int firelevel = 126;	//126
 
 			//火種が発火するか判定
 #pragma omp parallel
 			{
 #pragma omp for
-				for (int i = 0; i < fireApp_N+20 - 2; i++){
+				for (int i = 0; i < fireApp_N2 - 2; i++){
 					for (int j = 1; j < fireApp_N - 1; j++){
 						if (firelevel < seedpram[i][j])
 							fireApp_pos[i + fireApp_buff][j] = 120;
@@ -522,8 +497,8 @@ void ProjectionMapping2App::update()
 #pragma omp parallel
 			{
 #pragma omp for
-				for (int i = 0; i < fireApp_N - 2 + fireApp_buff; i++){
-					for (int j = 1; j < fireApp_N+20 - 1; j++){
+				for (int i = 0; i < fireApp_N2 - 2 + fireApp_buff; i++){
+					for (int j = 1; j < fireApp_N - 1; j++){
 						fireApp_pos[i][j] = (fireApp_pos[i + 1][j] + fireApp_pos[i + 2][j] + fireApp_pos[i][j] + fireApp_pos[i + 1][j - 1] + fireApp_pos[i + 1][j + 1]) / 5;
 					}
 				}
@@ -532,7 +507,7 @@ void ProjectionMapping2App::update()
 #pragma omp parallel
 			{
 #pragma omp for
-				for (int i = 0; i < fireApp_N+20 - 2 + fireApp_buff; i++){
+				for (int i = 0; i < fireApp_N2 - 2 + fireApp_buff; i++){
 					for (int j = 2; j < fireApp_N - 2; j++){
 						smokePos[i][j] = (smokePos[i + 1][j] + smokePos[i + 2][j] + smokePos[i][j] + smokePos[i + 1][j - 1] + smokePos[i + 1][j + 1] + smokePos[i + 1][j - 2] + smokePos[i + 1][j + 2] + smokePos[i + 2][j - 1] + smokePos[i + 2][j + 1] + smokePos[i + 2][j - 2] + smokePos[i + 2][j + 2] + 7) / 12;
 					}
@@ -722,19 +697,10 @@ void ProjectionMapping2App::update()
 		soul_Pos[0] = (float)soul_PosX;
 		soul_Pos[1] = (float)soul_PosY;
 	}
-
-	//time_end = clock();
-	//console() << "update:" << (double)(time_end - time_start) / CLOCKS_PER_SEC << "[sec]" << endl;
-
-	//	mTexture = gl::Texture(fromOcv(input1));
 }
 
 void ProjectionMapping2App::draw()
 {
-	/*audio*/
-
-	//	time_start = clock();
-
 	/*BasicApp*/
 	if (sw == 1){
 		glEnable(GL_LIGHTING);
@@ -795,8 +761,6 @@ void ProjectionMapping2App::draw()
 		}
 		gl::popMatrices();
 
-		//console() << "mat_ambient: " << mat_ambient[0] << endl;;
-
 	}
 
 	/*fireApp:0*/
@@ -814,7 +778,7 @@ void ProjectionMapping2App::draw()
 #pragma omp parallel
 		{
 #pragma omp for
-			for (int i = 0; i < fireApp_N+20 + fireApp_buff; i += 2){
+			for (int i = 0; i < fireApp_N2 + fireApp_buff; i += 2){
 				for (int j = 0; j < fireApp_N; j += 2){
 					gl::color(fireColor[fireApp_pos[i][j]][0] * (1 - fireApp_a) + smokePos[i][j] * fireApp_a, fireColor[fireApp_pos[i][j]][1] * (1 - fireApp_a) + smokePos[i][j] * fireApp_a, fireColor[fireApp_pos[i][j]][2] * (1 - fireApp_a) + smokePos[i][j] * fireApp_a);
 					gl::drawSolidEllipse(ci::Vec2d(fireApp_XY[0] + j, fireApp_XY[1] + i), 1.0, 1.0);
@@ -822,7 +786,6 @@ void ProjectionMapping2App::draw()
 			}
 		}
 	}
-
 
 	/*PenkiApp:6*/
 	else if (sw == 6){
@@ -848,8 +811,6 @@ void ProjectionMapping2App::draw()
 		gl::clear(Color(0, 0, 0));
 		if (!TurnCube_mTexture)
 			return;
-
-		//gl::setMatrices(mMayaCam.getCamera());
 
 		/*light on*/
 		glEnable(GL_LIGHTING);
@@ -1058,7 +1019,6 @@ void ProjectionMapping2App::draw()
 
 			DrawGaussian();
 
-			//i = 0;
 		}
 		else{
 			if (soul_INorOUT == 1){
@@ -1069,11 +1029,7 @@ void ProjectionMapping2App::draw()
 			DrawGaussian();
 		}
 	}
-	//time_end = clock();
-	//console() << "draw:" << (double)(time_end - time_start) / CLOCKS_PER_SEC << "[sec]" << endl;
 
-
-//InputXY[0] = (float)(x + 320); InputXY[1] = (float)(y + 230);
 InputXY[0] = (float)((P2-P1)*x/100+P1); InputXY[1] = (float)((P4-P3)*y/100+P3);
 	gl::color(255, 0, 0);
 	gl::drawSolidCircle(InputXY, 5);
@@ -1088,15 +1044,6 @@ InputXY[0] = (float)((P2-P1)*x/100+P1); InputXY[1] = (float)((P4-P3)*y/100+P3);
 		}
 	}
 }
-
-//void ProjectionMapping2App::drawGrid(float size, float step)
-//{
-//	gl::color(Colorf(0.2f, 0.2f, 0.2f));
-//	for (float i = -size; i <= size; i += step) {
-//		gl::drawLine(ci::Vec3f(i, 0.0f, -size), ci::Vec3f(i, 0.0f, size));
-//		gl::drawLine(ci::Vec3f(-size, 0.0f, i), ci::Vec3f(size, 0.0f, i));
-//	}
-//}
 
 void ProjectionMapping2App::reload()
 {
@@ -1208,7 +1155,6 @@ void ProjectionMapping2App::resetup(int re_sw){
 			fireColor[i][1] = 255;
 			fireColor[i][2] = (i - 64) * 4;
 		}
-		//		setWindowSize(1000, 800);
 		mSeed = clock() & 65535;
 		mOctaves = 4;
 		mTime = 0.0f;
@@ -1216,7 +1162,7 @@ void ProjectionMapping2App::resetup(int re_sw){
 #pragma omp parallel
 		{
 #pragma omp for
-			for (int i = 0; i < fireApp_N+20 + fireApp_buff; i++){
+			for (int i = 0; i < fireApp_N2 + fireApp_buff; i++){
 				for (int j = 0; j < fireApp_N; j++){
 					fireApp_pos[i][j] = 0;
 					smokePos[i][j] = 0;
@@ -1287,9 +1233,6 @@ void ProjectionMapping2App::resetup(int re_sw){
 		fs::path a_moviePath("C:\\cinder_0.8.6_vc2013\\projects\\ProjectionMapping\\resources\\MeditationVideo.mp4");
 		if (!a_moviePath.empty())
 			loadMovieFile(a_moviePath);
-
-		//set window size
-		//setWindowSize(1280, 800);
 
 		window_DIFFUSE = true;
 		window_AMBIENT = true;
@@ -1367,6 +1310,7 @@ void ProjectionMapping2App::resetup(int re_sw){
 		soul_PosY = (int)xyLeftUp[1];
 	}
 
+	console() << app_name[re_sw] << endl;
 	time_start = clock();
 }
 void ProjectionMapping2App::keyDown(KeyEvent event)
@@ -1383,16 +1327,15 @@ void ProjectionMapping2App::keyDown(KeyEvent event)
 	if (debag){
 		if (event.getChar() >= '0' && event.getChar() <= '7'){
 			sw = event.getChar() - 48;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
-			console() << "スイッチ：" << app_name[sw] << endl;
 			resetup(sw);
 		}
 	}
 }
 
 void ProjectionMapping2App::mouseDown(MouseEvent event){
-	mouseX = event.getX();
-	mouseY = event.getY();
-	console() << mouseX << "," << mouseY << endl;
+	x = event.getX();
+	y = event.getY();
+	console() << x << "," << y << endl;
 }
 
 CINDER_APP_NATIVE(ProjectionMapping2App, RendererGl)
