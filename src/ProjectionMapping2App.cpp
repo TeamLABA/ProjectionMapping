@@ -302,20 +302,20 @@ void ProjectionMapping2App::setup()
 	}
 
 
-	sw = 3;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
+	sw = 7;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
 	avi = 0;	//movie 1:fire_water, 2:water_window, 0:openingMovie.mp4, 4:widow_TurnCube, 5:TurnCube_Shabon
 	setFullScreen(!isFullScreen());
 	resetup(sw);
 
 	/*audio*/
 	audio::SourceFileRef sourceFile = audio::load(loadAsset("o14.mp3"));
-	mVoice = mVoice = audio::Voice::create( sourceFile );
+	mVoice = audio::Voice::create( sourceFile );
 
 	BGM_volume = 1.0;
 	BGM_pan = 1.0;
 	mVoice->setVolume(BGM_volume);
 	mVoice->setPan(BGM_pan);
-	mVoice->start();
+	//->start();	//draw‚ÉˆÚ“®
 }
 
 void ProjectionMapping2App::mouseDrag(MouseEvent event)
@@ -732,7 +732,9 @@ void ProjectionMapping2App::update()
 void ProjectionMapping2App::draw()
 {
 	/*audio*/
-
+	if (sw == 0 || sw == 1 || sw == 2 || sw == 3 || sw == 4 || sw == 5 || sw == 6){//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
+		mVoice->start();
+	}
 	//	time_start = clock();
 
 	/*BasicApp*/
@@ -1075,8 +1077,8 @@ void ProjectionMapping2App::draw()
 
 //InputXY[0] = (float)(x + 320); InputXY[1] = (float)(y + 230);
 InputXY[0] = (float)((P2-P1)*x/100+P1); InputXY[1] = (float)((P4-P3)*y/100+P3);
-	gl::color(255, 0, 0);
-	gl::drawSolidCircle(InputXY, 5);
+	/*gl::color(255, 0, 0);
+	gl::drawSolidCircle(InputXY, 5);*/
 
 	for (int i = 0; i < contours.size(); i++){
 		count = contours.at(i).size();
