@@ -134,7 +134,7 @@ int P4 = 400 + 220 - 70;	//301
 
 /*Debug mode: true -> debag mode*/
 /*カメラがない場合はtrueにして実行してください*/
-bool debag = true;
+bool debag = false;
 
 /*切り替えるスイッチの数*/
 const int sw_num = 8;
@@ -296,7 +296,7 @@ void ProjectionMapping2App::setup()
 		}
 	}
 
-	sw = 5;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
+	sw = 0;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
 
 	avi = 0;	//movie 1:fire_water, 2:water_window, 0:openingMovie.mp4, 4:widow_TurnCube, 5:TurnCube_Shabon
 	setFullScreen(!isFullScreen());
@@ -725,10 +725,8 @@ void ProjectionMapping2App::update()
 
 	/*soul:5*/
 	if (sw == 5){	
-		if (x > 0 && y > 0 && x < 100 && y < 100){
 			soul_x = (int)((P2 - P1)*x / 100 + P1);
 			soul_y = (int)((P4 - P3)*y / 100 + P3);
-		}
 
 		soul_input[0] = (float)soul_x;	soul_input[1] = (float)soul_y;
 		if (soul_PosX == xyLeftUp[0] && soul_PosY == xyLeftUp[1]){
@@ -1075,7 +1073,7 @@ void ProjectionMapping2App::draw()
 		gl::clear(Color(0, 0, 0));
 		if (soul_input[0]>xyLeftUp[0] && soul_input[0]<xyRightDown[0] && soul_input[1]>xyLeftUp[1] && soul_input[1]<xyRightDown[1]){	//マウスカーソルが窓内にあるとき
 			soul_INorOUT = 1;
-			soul_f = 0;
+			soul_f = 5;
 
 			soul_N = abs(soul_input[1] - soul_Pos[1]) / abs(soul_input[0] - soul_Pos[0]);
 
