@@ -296,11 +296,74 @@ void ProjectionMapping2App::setup()
 		}
 	}
 
-
 	sw = 3;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
 	avi = 0;	//movie 1:fire_water, 2:water_window, 0:openingMovie.mp4, 4:widow_TurnCube, 5:TurnCube_Shabon
 	setFullScreen(!isFullScreen());
 	resetup(sw);
+
+	/*water*/
+	DIFFUSE = true;
+	AMBIENT = true;
+	SPECULAR = true;
+	EMISSIVE = true;
+
+	/*fire*/
+	fireApp_x = fireApp_y = 0;
+	for (int i = 0; i < 32; i++){
+		fireColor[i][0] = i * 8;
+		fireColor[i][1] = 0;
+		fireColor[i][2] = 0;
+	}
+	for (int i = 32; i < 64; i++){
+		fireColor[i][0] = 255;
+		fireColor[i][1] = (i - 32) * 8;
+		fireColor[i][2] = 0;
+	}
+	for (int i = 64; i < 128; i++){
+		fireColor[i][0] = 255;
+		fireColor[i][1] = 255;
+		fireColor[i][2] = (i - 64) * 4;
+	}
+	mSeed = clock() & 65535;
+	mOctaves = 4;
+	mTime = 0.0f;
+	mFrequency = 1 * 50 / 200.0f;
+
+	/*TurnCube*/
+	TurnCube_DIFFUSE = true;
+	TurnCube_AMBIENT = true;
+	TurnCube_SPECULAR = true;
+	TurnCube_EMISSIVE = true;
+
+	/*penki*/
+	mt.seed(rnd());
+
+	/*shabon*/
+	for (int i = 0; i < Shabon_N; i++){
+		Shabon_kyu[i][0][0] = randFloat((float)P1, (float)P2);
+		Shabon_kyu[i][0][1] = randFloat((float)P3, (float)P4);
+		Shabon_kyu[i][0][2] = 0;
+		//初期速度と色情報
+		for (int j = 0; j < 3; j++){
+			Shabon_kyu[i][1][j] = 0;
+		}
+		Shabon_kyu[i][2][0] = randFloat((float)0, (float)1);
+		Shabon_kyu[i][2][1] = randFloat((float)0.4, (float)1);
+		Shabon_kyu[i][2][2] = randFloat((float)1, (float)1);
+	}
+
+	/*window*/
+	window_DIFFUSE = true;
+	window_AMBIENT = true;
+	window_SPECULAR = true;
+	window_EMISSIVE = true;
+
+	/*soul*/
+	gl::clear(Color(0, 0, 0));
+	xyLeftUp[0] = (float)P1;
+	xyLeftUp[1] = (float)P3;
+	xyRightDown[0] = (float)P2;
+	xyRightDown[1] = (float)P4;
 
 	/*audio*/
 	audio::SourceFileRef sourceFile = audio::load(loadAsset("o14.mp3"));
@@ -563,8 +626,8 @@ void ProjectionMapping2App::update()
 	/*TurnCubeApp:3*/
 	if (sw == 3){
 		
-		TurnCube_x = (int)(P2-P1)*x/100+P1;
-		TurnCube_y = (int)(P4-P3)*y/100+P3;
+		TurnCube_x = (int)x;
+		TurnCube_y = (int)y;
 
 		if (TurnCube_f == 0){
 			if (TurnCube_x > 0 && TurnCube_y > 0 && TurnCube_x < 100 && TurnCube_y < 100){
@@ -1030,7 +1093,7 @@ void ProjectionMapping2App::draw()
 		}
 	}
 
-InputXY[0] = (float)((P2-P1)*x/100+P1); InputXY[1] = (float)((P4-P3)*y/100+P3);
+	InputXY[0] = (float)((P2-P1)*x/100+P1); InputXY[1] = (float)((P4-P3)*y/100+P3);
 	gl::color(255, 0, 0);
 	gl::drawSolidCircle(InputXY, 5);
 
@@ -1114,20 +1177,10 @@ void ProjectionMapping2App::resetup(int re_sw){
 		cam.setPerspective(60.0f, getWindowAspectRatio(), 1.0f, 200.0f);
 		mMayaCam.setCurrentCam(cam);
 
-		//set window size
-		//setWindowSize(1000, 800);
-
-		DIFFUSE = true;
-		AMBIENT = true;
-		SPECULAR = true;
-		EMISSIVE = true;
-
 		//init
-		for (int i = 0; i < 1; i++){
-			for (int j = 0; j < BasicApp_N2; j++){
-				for (int k = 0; k < BasicApp_N; k++){
-					BasicApp_pos[i][j][k] = 50;
-				}
+		for (int j = 0; j < BasicApp_N2; j++){
+			for (int k = 0; k < BasicApp_N; k++){
+				BasicApp_pos[0][j][k] = 50;
 			}
 		}
 		for (int j = 0; j < BasicApp_N2; j++){
@@ -1139,26 +1192,6 @@ void ProjectionMapping2App::resetup(int re_sw){
 
 	/*fireApp:0*/
 	else if (re_sw == 0){
-		fireApp_x = fireApp_y = 0;
-		for (int i = 0; i < 32; i++){
-			fireColor[i][0] = i * 8;
-			fireColor[i][1] = 0;
-			fireColor[i][2] = 0;
-		}
-		for (int i = 32; i < 64; i++){
-			fireColor[i][0] = 255;
-			fireColor[i][1] = (i - 32) * 8;
-			fireColor[i][2] = 0;
-		}
-		for (int i = 64; i < 128; i++){
-			fireColor[i][0] = 255;
-			fireColor[i][1] = 255;
-			fireColor[i][2] = (i - 64) * 4;
-		}
-		mSeed = clock() & 65535;
-		mOctaves = 4;
-		mTime = 0.0f;
-		mFrequency = 1 * 50 / 200.0f;
 #pragma omp parallel
 		{
 #pragma omp for
@@ -1173,21 +1206,11 @@ void ProjectionMapping2App::resetup(int re_sw){
 		setFullScreen(!isFullScreen());
 	}
 
-	/*PenkiApp:6*/
-	else if (re_sw == 6){
-		mt.seed(rnd());
-	}
-
 	/*TurnCubeApp:3*/
 	else if (re_sw == 3){
 		//画像読み込み
 		//fs::path path = getOpenFilePath("movie_snap.png", ImageIo::getLoadExtensions());
 		TurnCube_mTexture = gl::Texture(loadImage(loadAsset("movie_snap.png")));
-
-		TurnCube_DIFFUSE = true;
-		TurnCube_AMBIENT = true;
-		TurnCube_SPECULAR = true;
-		TurnCube_EMISSIVE = true;
 
 		//視点設定
 		cam.setEyePoint(ci::Vec3f(85.5 - 85, -47.5 + 43, 150));
@@ -1197,7 +1220,6 @@ void ProjectionMapping2App::resetup(int re_sw){
 
 		TurnCube_mCubeRotation.setToIdentity();
 
-		//setWindowSize(1000, 800);
 		glEnable(GL_TEXTURE_2D);
 		gl::enableDepthRead();
 		gl::enableDepthWrite();
@@ -1207,18 +1229,6 @@ void ProjectionMapping2App::resetup(int re_sw){
 	else if (re_sw == 4){
 		//setWindowSize(1000, 800);
 		//座標の設定
-		for (int i = 0; i < Shabon_N; i++){
-			Shabon_kyu[i][0][0] = randFloat((float)P1, (float)P2);
-			Shabon_kyu[i][0][1] = randFloat((float)P3, (float)P4);
-			Shabon_kyu[i][0][2] = 0;
-			//初期速度と色情報
-			for (int j = 0; j < 3; j++){
-				Shabon_kyu[i][1][j] = 0;
-			}
-			Shabon_kyu[i][2][0] = randFloat((float)0, (float)1);
-			Shabon_kyu[i][2][1] = randFloat((float)0.4, (float)1);
-			Shabon_kyu[i][2][2] = randFloat((float)1, (float)1);
-		}
 		setFullScreen(!isFullScreen());
 		setFullScreen(!isFullScreen());
 	}
@@ -1233,11 +1243,6 @@ void ProjectionMapping2App::resetup(int re_sw){
 		fs::path a_moviePath("C:\\cinder_0.8.6_vc2013\\projects\\ProjectionMapping\\resources\\MeditationVideo.mp4");
 		if (!a_moviePath.empty())
 			loadMovieFile(a_moviePath);
-
-		window_DIFFUSE = true;
-		window_AMBIENT = true;
-		window_SPECULAR = true;
-		window_EMISSIVE = true;
 
 		window_r = 0;
 		window_flag = 0;
@@ -1292,20 +1297,10 @@ void ProjectionMapping2App::resetup(int re_sw){
 			if (!avi_moviePath.empty())
 				loadMovieFile(avi_moviePath);
 		}
-
-		window_DIFFUSE = true;
-		window_AMBIENT = true;
-		window_SPECULAR = true;
-		window_EMISSIVE = true;
 	}
 
 	/*soul:5*/
 	else if (re_sw == 5){
-		gl::clear(Color(0, 0, 0));
-		xyLeftUp[0] = (float)P1;
-		xyLeftUp[1] = (float)P3;
-		xyRightDown[0] = (float)P2;
-		xyRightDown[1] = (float)P4;
 		soul_PosX = (int)xyLeftUp[0];
 		soul_PosY = (int)xyLeftUp[1];
 	}
@@ -1333,8 +1328,8 @@ void ProjectionMapping2App::keyDown(KeyEvent event)
 }
 
 void ProjectionMapping2App::mouseDown(MouseEvent event){
-	x = event.getX();
-	y = event.getY();
+	x = event.getX() * 2;
+	y = event.getY()*2.6667;
 	console() << x << "," << y << endl;
 }
 
