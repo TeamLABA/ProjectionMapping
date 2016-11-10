@@ -141,7 +141,7 @@ const int sw_num = 8;
 
 const char app_name[8][32] = { { "fireApp" }, { "water" }, { "window" }, { "TurnCube" }, { "Shabon" }, { "soul" }, { "PenkiApp" }, { "movie" } };
 const int elapsed_time = 100; //10[sec]
-const double movie_time[8] = {64,0,12,5,5,0,0,0}; 
+const double movie_time[8] = {63,6,12,5,5,5,5,32}; 
 
 class ProjectionMapping2App : public AppNative {
 public:
@@ -296,7 +296,7 @@ void ProjectionMapping2App::setup()
 		}
 	}
 
-	sw = 0;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
+	sw = 7;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
 
 	avi = 0;	//movie 1:fire_water, 2:water_window, 0:openingMovie.mp4, 3:widow_TurnCube, 4:TurnCube_Shabon, 5~6:load, 7:endroll
 	setFullScreen(!isFullScreen());
@@ -398,6 +398,7 @@ void ProjectionMapping2App::update()
 	if (ch_time >= elapsed_time&&sw!=7){
 		sw = 7;
 		resetup(sw);
+		mVoice->stop();
 	}
 	else if (ch_time >= movie_time[avi] && sw == 7){
 		sw = avi;
@@ -407,6 +408,9 @@ void ProjectionMapping2App::update()
 			avi = 0;
 		}
 		resetup(sw);
+
+		/*audio*/
+		mVoice->start();
 	}
 
 	if (!debag){
@@ -765,10 +769,6 @@ void ProjectionMapping2App::update()
 
 void ProjectionMapping2App::draw()
 {
-	/*audio*/
-	if (sw >= 0 &&sw<= 6){//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
-		mVoice->start();
-	}
 	//	time_start = clock();
 
 
