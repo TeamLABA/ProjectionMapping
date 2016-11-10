@@ -134,7 +134,7 @@ int P4 = 400 + 220 - 70;	//301
 
 /*Debug mode: true -> debag mode*/
 /*カメラがない場合はtrueにして実行してください*/
-bool debag = true;
+bool debag = false;
 
 /*切り替えるスイッチの数*/
 const int sw_num = 8;
@@ -410,7 +410,7 @@ void ProjectionMapping2App::update()
 		resetup(sw);
 
 		/*audio*/
-		mVoice->start();
+		if(sw!=7) mVoice->start();
 	}
 
 	if (!debag){
@@ -1320,6 +1320,14 @@ void ProjectionMapping2App::resetup(int re_sw){
 	else if (re_sw == 5){
 		soul_PosX = (int)xyLeftUp[0];
 		soul_PosY = (int)xyLeftUp[1];
+		setFullScreen(!isFullScreen());
+		setFullScreen(!isFullScreen());
+	}
+
+	/*Penki:6*/
+	else if (re_sw == 6){
+		setFullScreen(!isFullScreen());
+		setFullScreen(!isFullScreen());
 	}
 
 	console() << app_name[re_sw] << endl;
