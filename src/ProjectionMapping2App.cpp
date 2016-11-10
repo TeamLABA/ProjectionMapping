@@ -134,7 +134,7 @@ int P4 = 400 + 220 - 70;	//301
 
 /*Debug mode: true -> debag mode*/
 /*カメラがない場合はtrueにして実行してください*/
-bool debag = false;
+bool debag = true;
 
 /*切り替えるスイッチの数*/
 const int sw_num = 8;
@@ -417,7 +417,18 @@ void ProjectionMapping2App::update()
 		/*camera_ctApp*/
 		Mat input1(toOcv(mCap.getSurface()));
 		cvtColor(input1, hsv_image, CV_BGR2HSV);
-		inRange(hsv_image, Scalar(20, 80, 120), Scalar(40, 140, 255), mask_image);
+		if (sw == 0){
+			inRange(hsv_image, Scalar(10, 87, 170), Scalar(32, 158, 200), mask_image);
+		}
+		//if (sw == 0){
+		//	inRange(hsv_image, Scalar(16, 41, 120), Scalar(26, 71, 140), mask_image);	//black(shadow)
+		//}
+		else if (sw == 1){
+			inRange(hsv_image, Scalar(25, 70, 140), Scalar(35, 100, 160), mask_image);
+		}
+		else{
+			inRange(hsv_image, Scalar(20, 130, 140), Scalar(40, 170, 180), mask_image);
+		}
 		cv::erode(mask_image, erode, cv::Mat(), Point(-1, -1), 2);
 		cv::dilate(erode, dilate, cv::Mat(), Point(-1, -1), 4);
 
