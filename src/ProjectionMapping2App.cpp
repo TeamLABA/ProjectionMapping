@@ -134,7 +134,7 @@ int P4 = 400 + 220 - 70;	//301
 
 /*Debug mode: true -> debag mode*/
 /*カメラがない場合はtrueにして実行してください*/
-bool debag = false;
+bool debag = true;
 
 /*切り替えるスイッチの数*/
 const int sw_num = 8;
@@ -239,11 +239,10 @@ public:
 
 	/*soul lost*/
 	gl::Texture myImage, myImage2;
-	int soul_x, soul_y;
 	int Frag = 1;
 	double soul_Speed = 1.00;
 	ci::Vec2f soul_Pos, soul_input, now_xy, xyLeftUp, xyRightDown;
-	int soul_PosX = 271, soul_PosY = 148;
+	int soul_PosX, soul_PosY;
 	int soul_Count = 0;
 	int soul_f = 0;
 	double soul_G;
@@ -252,6 +251,7 @@ public:
 	double soul_N;
 	void DrawGaussian();
 	ci::Vec2f Pos_xy, InputXY;
+	double target[2];
 
 	//protected:
 	/*BasicApp*/
@@ -365,8 +365,8 @@ void ProjectionMapping2App::setup()
 	xyLeftUp[1] = (float)P3;
 	xyRightDown[0] = (float)P2;
 	xyRightDown[1] = (float)P4;
-	soul_PosX = (int)xyLeftUp[0];
-	soul_PosY = (int)xyLeftUp[1];
+	soul_Pos[0]=soul_PosX = (int)xyLeftUp[0];
+	soul_Pos[1]=soul_PosY = (int)xyLeftUp[1];
 
 	/*audio*/
 	audio::SourceFileRef sourceFile = audio::load(loadAsset("Stream.mp3"));
@@ -725,41 +725,48 @@ void ProjectionMapping2App::update()
 
 	/*soul:5*/
 	if (sw == 5){	
-			soul_x = (int)((P2 - P1)*x / 100 + P1);
-			soul_y = (int)((P4 - P3)*y / 100 + P3);
+		soul_input[0] = (int)((P2 - P1)*x / 100 + P1);
+		soul_input[1] = (int)((P4 - P3)*y / 100 + P3);
 
-		soul_input[0] = (float)soul_x;	soul_input[1] = (float)soul_y;
-		if (soul_PosX == xyLeftUp[0] && soul_PosY == xyLeftUp[1]){
-			soul_Count = (int)(xyRightDown[0] - xyLeftUp[0] + 1);
-			soul_f = 1;
+		if (soul_PosY == xyLeftUp[1]&&soul_PosX != xyRightDown[0]){
+			soul_PosX += 1;
 		}
-		else if (soul_PosX >= xyRightDown[0] && soul_PosY == xyLeftUp[1]){
-			soul_Count = (int)(xyRightDown[1] - xyLeftUp[1]);
-			soul_f = 2;
+		else if (soul_PosX == xyRightDown[0] && soul_PosY != xyRightDown[1]){
+			soul_PosY += 1;
 		}
-		else if (soul_PosX == xyRightDown[0] && soul_PosY == xyRightDown[1]){
-			soul_Count = (int)(xyRightDown[0] - xyLeftUp[0]);
-			soul_f = 3;
+		else if (soul_PosX != xyLeftUp[0] && soul_PosY == xyRightDown[1]){
+			soul_PosX -= 1;
 		}
-		else if (soul_PosX == xyLeftUp[0] && soul_PosY == xyRightDown[1]){
-			soul_Count = (int)(xyRightDown[1] - xyLeftUp[1]);
-			soul_f = 4;
+		else if (soul_PosX == xyLeftUp[0] && soul_PosY != xyLeftUp[1]){
+			soul_PosY -= 1;
 		}
 
-		if (soul_f == 1 && soul_Count > 0){
-			soul_PosX += 1; soul_Count -= 1;
+		//soul_Pos[0] = (float)soul_PosX;	//現在座標をコピー
+		//soul_Pos[1] = (float)soul_PosY;	//
+
+		if (soul_input[0] > xyLeftUp[0] && soul_input[0]<xyRightDown[0] && soul_input[1]>xyLeftUp[1] && soul_input[1] < xyRightDown[1]){
+			target[0] = soul_input[0];
+			target[1] = soul_input[1];
 		}
-		else if (soul_f == 2 && soul_Count > 0){
-			soul_PosY += 1; soul_Count -= 1;
+		else{
+			target[0] = soul_PosX;
+			target[1] = soul_PosY;
 		}
-		else if (soul_f == 3 && soul_Count > 0){
-			soul_PosX -= 1; soul_Count -= 1;
+		soul_N = abs(target[1] - soul_Pos[1]) / abs(target[0] - soul_Pos[0]);
+		if (soul_N <= 1){
+			soul_N = (target[1] - soul_Pos[1]) / (target[0] - soul_Pos[0]);
+			if (abs(target[0] - soul_Pos[0]) > 1){
+				soul_Pos[0] += (int)((target[0] - soul_Pos[0]) / abs(target[0] - soul_Pos[0]));
+				soul_Pos[1] = (int)(soul_Pos[1] + soul_N + 0.5);
+			}
 		}
-		else if (soul_f == 4 && soul_Count > 0){
-			soul_PosY -= 1; soul_Count -= 1;
+		else{
+			soul_N = (target[0] - soul_Pos[0]) / (target[1] - soul_Pos[1]);
+			if (abs(target[1] - soul_Pos[1]) > 1){
+				soul_Pos[0] = (int)(soul_Pos[0] + soul_N + 0.5);
+				soul_Pos[1] += (int)((target[1] - soul_Pos[1]) / abs(target[1] - soul_Pos[1]));
+			}
 		}
-		soul_Pos[0] = (float)soul_PosX;
-		soul_Pos[1] = (float)soul_PosY;
 	}
 }
 
@@ -1071,34 +1078,7 @@ void ProjectionMapping2App::draw()
 	/*soul:5*/
 	else if (sw == 5){
 		gl::clear(Color(0, 0, 0));
-		if (soul_input[0]>xyLeftUp[0] && soul_input[0]<xyRightDown[0] && soul_input[1]>xyLeftUp[1] && soul_input[1]<xyRightDown[1]){	//マウスカーソルが窓内にあるとき
-			soul_INorOUT = 1;
-			soul_f = 5;
-
-			soul_N = abs(soul_input[1] - soul_Pos[1]) / abs(soul_input[0] - soul_Pos[0]);
-
-			if (soul_N <= 1){
-				soul_N = (soul_input[1] - soul_Pos[1]) / (soul_input[0] - soul_Pos[0]);
-				soul_PosX += (int)((soul_input[0] - soul_Pos[0]) / abs(soul_input[0] - soul_Pos[0]));
-				soul_PosY = (int)(soul_PosY + soul_N + 0.5);
-			}
-			else{
-				soul_N = (soul_input[0] - soul_Pos[0]) / (soul_input[1] - soul_Pos[1]);
-				soul_PosX = (int)(soul_PosX + soul_N + 0.5);
-				soul_PosY += (int)((soul_input[1] - soul_Pos[1]) / abs(soul_input[1] - soul_Pos[1]));
-			}
-
-			DrawGaussian();
-
-		}
-		else{
-			if (soul_INorOUT == 1){
-				soul_PosX = (int)xyLeftUp[0]; 
-				soul_PosY = (int)xyLeftUp[1]; 
-			}
-			soul_INorOUT = 2;
-			DrawGaussian();
-		}
+		DrawGaussian();
 	}
 
 	InputXY[0] = (float)((P2-P1)*x/100+P1); InputXY[1] = (float)((P4-P3)*y/100+P3);
@@ -1166,12 +1146,18 @@ void ProjectionMapping2App::DrawGaussian(){
 
 			if (soul_D < sqrt(13)){
 				soul_D = ceil(soul_D);
-				soul_Pos_xy[0] = soul_Pos[0] + i; soul_Pos_xy[1] = soul_Pos[1] + j;
+				soul_Pos_xy[0] = soul_Pos[0] + i;
+				soul_Pos_xy[1] = soul_Pos[1] + j;
 				gl::color(color[(int)soul_D]);
 				gl::drawSolidCircle(soul_Pos_xy, 1.5);
 			}
 		}
 	}
+	console() << soul_Pos_xy << endl;
+	gl::drawSolidCircle(soul_input, 10);
+	//gl::drawSolidCircle(xyLeftUp, 10);
+	//gl::drawSolidCircle(xyRightDown, 10);
+	//gl::drawSolidCircle(ci::Vec2f(soul_PosX,soul_PosY), 10);
 }
 
 void ProjectionMapping2App::resetup(int re_sw){
@@ -1307,8 +1293,8 @@ void ProjectionMapping2App::resetup(int re_sw){
 
 	/*soul:5*/
 	else if (re_sw == 5){
-		soul_PosX = (int)xyLeftUp[0];
-		soul_PosY = (int)xyLeftUp[1];
+		soul_Pos[0] = soul_PosX = (int)xyLeftUp[0];
+		soul_Pos[1] = soul_PosY = (int)xyLeftUp[1];
 	}
 
 	console() << app_name[re_sw] << endl;
