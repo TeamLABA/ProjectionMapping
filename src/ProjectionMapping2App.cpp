@@ -141,7 +141,7 @@ const int sw_num = 8;
 
 const char app_name[8][32] = { { "fireApp" }, { "water" }, { "window" }, { "TurnCube" }, { "Shabon" }, { "soul" }, { "PenkiApp" }, { "movie" } };
 const int elapsed_time = 100; //10[sec]
-const double movie_time[8] = {64,0,12,5,5,0,0,0}; 
+const double movie_time[8] = {63,6,12,5,5,5,5,32}; 
 
 class ProjectionMapping2App : public AppNative {
 public:
@@ -296,7 +296,7 @@ void ProjectionMapping2App::setup()
 		}
 	}
 
-	sw = 0;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
+	sw = 7;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
 
 	avi = 0;	//movie 1:fire_water, 2:water_window, 0:openingMovie.mp4, 3:widow_TurnCube, 4:TurnCube_Shabon, 5~6:load, 7:endroll
 	setFullScreen(!isFullScreen());
@@ -398,6 +398,7 @@ void ProjectionMapping2App::update()
 	if (ch_time >= elapsed_time&&sw!=7){
 		sw = 7;
 		resetup(sw);
+		mVoice->stop();
 	}
 	else if (ch_time >= movie_time[avi] && sw == 7){
 		sw = avi;
@@ -407,13 +408,27 @@ void ProjectionMapping2App::update()
 			avi = 0;
 		}
 		resetup(sw);
+
+		/*audio*/
+		if(sw!=7) mVoice->start();
 	}
 
 	if (!debag){
 		/*camera_ctApp*/
 		Mat input1(toOcv(mCap.getSurface()));
 		cvtColor(input1, hsv_image, CV_BGR2HSV);
-		inRange(hsv_image, Scalar(20, 80, 120), Scalar(40, 140, 255), mask_image);
+		if (sw == 0){
+			inRange(hsv_image, Scalar(10, 87, 170), Scalar(32, 158, 200), mask_image);
+		}
+		//if (sw == 0){
+		//	inRange(hsv_image, Scalar(16, 41, 120), Scalar(26, 71, 140), mask_image);	//black(shadow)
+		//}
+		else if (sw == 1){
+			inRange(hsv_image, Scalar(25, 70, 140), Scalar(35, 100, 160), mask_image);
+		}
+		else{
+			inRange(hsv_image, Scalar(20, 130, 140), Scalar(40, 170, 180), mask_image);
+		}
 		cv::erode(mask_image, erode, cv::Mat(), Point(-1, -1), 2);
 		cv::dilate(erode, dilate, cv::Mat(), Point(-1, -1), 4);
 
@@ -772,10 +787,6 @@ void ProjectionMapping2App::update()
 
 void ProjectionMapping2App::draw()
 {
-	/*audio*/
-	if (sw >= 0 &&sw<= 6){//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
-		mVoice->start();
-	}
 	//	time_start = clock();
 
 
@@ -1295,6 +1306,14 @@ void ProjectionMapping2App::resetup(int re_sw){
 	else if (re_sw == 5){
 		soul_Pos[0] = soul_PosX = (int)xyLeftUp[0];
 		soul_Pos[1] = soul_PosY = (int)xyLeftUp[1];
+		setFullScreen(!isFullScreen());
+		setFullScreen(!isFullScreen());
+	}
+
+	/*Penki:6*/
+	else if (re_sw == 6){
+		setFullScreen(!isFullScreen());
+		setFullScreen(!isFullScreen());
 	}
 
 	console() << app_name[re_sw] << endl;
