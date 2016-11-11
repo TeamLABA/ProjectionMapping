@@ -63,10 +63,10 @@ using namespace cv;
 
 /*camera_ctApp*/
 gl::Texture mTexture;
-int camera_X1 = 169;	//カメラに映るパネル左上のx座標
-int camera_Y1 = 47;	//y座標
-int camera_X2 = 593;	//カメラに映るパネル右下の座標
-int camera_Y2 = 445;	//y座標
+int camera_X1 = 87;	//カメラに映るパネル左上のx座標
+int camera_Y1 = 54;	//y座標
+int camera_X2 = 526;	//カメラに映るパネル右下の座標
+int camera_Y2 = 470;	//y座標
 //int D1x = 420;	//プログラム上での描画部分左上のx座標
 //int D1y = 112;	//y座標
 
@@ -132,13 +132,13 @@ int P4 = 400 + 220 - 70;	//301
 
 /*Debug mode: true -> debag mode*/
 /*カメラがない場合はtrueにして実行してください*/
-bool debag = true;
+bool debag = false;
 
 /*切り替えるスイッチの数*/
 const int sw_num = 8;
 
 const char app_name[8][32] = { { "fireApp" }, { "water" }, { "window" }, { "TurnCube" }, { "Shabon" }, { "soul" }, { "PenkiApp" }, { "movie" } };
-const int program_time = 100;
+const int program_time = 45;
 const double movie_time[8] = {63,6,12,5,5,5,5,32}; 
 
 class ProjectionMapping2App : public AppNative {
@@ -406,6 +406,7 @@ void ProjectionMapping2App::update()
 		if (avi == 8){
 			sw = 7;
 			avi = 0;
+			elapsed_time += movie_time[avi];
 		}
 		resetup(sw);
 
@@ -418,16 +419,19 @@ void ProjectionMapping2App::update()
 		Mat input1(toOcv(mCap.getSurface()));
 		cvtColor(input1, hsv_image, CV_BGR2HSV);
 		if (sw == 0){
-			inRange(hsv_image, Scalar(10, 87, 170), Scalar(32, 158, 200), mask_image);
+			inRange(hsv_image, Scalar(10, 80, 30), Scalar(32, 255, 255), mask_image);
 		}
 		//if (sw == 0){
 		//	inRange(hsv_image, Scalar(16, 41, 120), Scalar(26, 71, 140), mask_image);	//black(shadow)
 		//}
 		else if (sw == 1){
-			inRange(hsv_image, Scalar(25, 70, 140), Scalar(35, 100, 160), mask_image);
+			inRange(hsv_image, Scalar(25, 70, 30), Scalar(35, 100, 255), mask_image);
+		}
+		else if (sw == 2){
+			inRange(hsv_image, Scalar(20, 100, 120), Scalar(40, 255, 255), mask_image);
 		}
 		else{
-			inRange(hsv_image, Scalar(20, 130, 140), Scalar(40, 170, 180), mask_image);
+			inRange(hsv_image, Scalar(20, 80, 120), Scalar(40, 255, 255), mask_image);
 		}
 		cv::erode(mask_image, erode, cv::Mat(), Point(-1, -1), 2);
 		cv::dilate(erode, dilate, cv::Mat(), Point(-1, -1), 4);
@@ -1090,20 +1094,23 @@ void ProjectionMapping2App::draw()
 		DrawGaussian();
 	}
 
-	gl::color(0.0f, 255.0f, 0.0f, 1.0f);
+	if (sw==0||(sw>=4&&sw<=6)){
+		gl::color(0.0f, 0.0f, 255.0f, 1.0f);
 #pragma omp parallel
-	{
+		{
 #pragma omp for
-		for (int i = 0; i < contours.size(); i++){
-			count = contours.at(i).size();
-			x_buff = 0.0;
-			y_buff = 0.0;
-			for (int j = 0; j < count; j++){
-				InputXY[0] = (P2 - P1)*contours.at(i).at(j).x / 100 + P1;
-				InputXY[1] = (P4 - P3)*contours.at(i).at(j).y / 100 + P3;
-				gl::drawSolidCircle(InputXY, 1);
+			for (int i = 0; i < contours.size(); i++){
+				count = contours.at(i).size();
+				for (int j = 0; j < count; j++){
+					//InputXY[0] = (P2 - P1)*contours.at(i).at(j).x / 100 + P1;
+					//InputXY[1] = (P4 - P3)*contours.at(i).at(j).y / 100 + P3;
+					InputXY[0] = 1280 * contours.at(i).at(j).x / 640;
+					InputXY[1] = 720 * contours.at(i).at(j).y / 480;
+					gl::drawSolidCircle(InputXY, 1);
+				}
 			}
 		}
+		gl::drawSolidCircle(ci::Vec2f((P2 - P1)*x / 100 + P1, (P4 - P3)*y / 100 + P3), 5);
 	}
 }
 
