@@ -67,8 +67,8 @@ int camera_X1 = 169;	//カメラに映るパネル左上のx座標
 int camera_Y1 = 47;	//y座標
 int camera_X2 = 593;	//カメラに映るパネル右下の座標
 int camera_Y2 = 445;	//y座標
-int D1x = 420;	//プログラム上での描画部分左上のx座標
-int D1y = 112;	//y座標
+//int D1x = 420;	//プログラム上での描画部分左上のx座標
+//int D1y = 112;	//y座標
 
 /*BasicApp*/
 GLfloat no_mat[] = { 0.0, 0.0, 0.0, 1.0 };
@@ -84,11 +84,9 @@ const int BasicApp_N2 = 102;	//位置合わせ用
 /*fireApp*/
 const int fireApp_buff = 100;
 const float fireApp_a = (const float)0.1;
-const float fireApp_XY[2] = { (float)(422)/*271*/, (float)(9) /*148*/ };
+const float fireApp_XY[2] = { (float)(422), (float)(9) };
 const int fireApp_N = (int)(425);
 const int fireApp_N2 = (int)(445);
-
-//位置合わせしたけど動かなくなりました_fire
 
 /*TurnCube*/
 GLfloat TurnCube_no_mat[] = { 1.0, 1.0, 1.0, 1.0 };
@@ -140,7 +138,7 @@ bool debag = true;
 const int sw_num = 8;
 
 const char app_name[8][32] = { { "fireApp" }, { "water" }, { "window" }, { "TurnCube" }, { "Shabon" }, { "soul" }, { "PenkiApp" }, { "movie" } };
-const int elapsed_time = 100; //10[sec]
+const int program_time = 100;
 const double movie_time[8] = {63,6,12,5,5,5,5,32}; 
 
 class ProjectionMapping2App : public AppNative {
@@ -155,6 +153,7 @@ public:
 
 	double clock_time = 0;
 	double ch_time = 0;
+	int elapsed_time;
 
 	/*camera_ctApp*/
 	int mouseX, mouseY;
@@ -198,7 +197,6 @@ public:
 
 	/*TurnCube*/
 	void reload();
-
 	void fileDrop(FileDropEvent event);
 
 	gl::Texture TurnCube_mTexture;
@@ -253,13 +251,11 @@ public:
 	ci::Vec2f Pos_xy, InputXY;
 	double target[2];
 
-	//protected:
 	/*BasicApp*/
 	float BasicApp_pos[2][BasicApp_N2][BasicApp_N];
 	MayaCamUI mMayaCam;
 	CameraPersp cam;
 
-	//private:
 	/*PenkiApp*/
 	struct Waterdrop{
 		ci::Vec2d PenkiApp_pos;
@@ -297,10 +293,10 @@ void ProjectionMapping2App::setup()
 	}
 
 	sw = 7;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
-
 	avi = 0;	//movie 1:fire_water, 2:water_window, 0:openingMovie.mp4, 3:widow_TurnCube, 4:TurnCube_Shabon, 5~6:load, 7:endroll
 	setFullScreen(!isFullScreen());
 	resetup(sw);
+	elapsed_time = movie_time[avi];
 
 	/*water*/
 	DIFFUSE = true;
@@ -377,6 +373,8 @@ void ProjectionMapping2App::setup()
 	mVoice->setVolume(BGM_volume);
 	mVoice->setPan(BGM_pan);
 	//->start();	//drawに移動
+
+	time_start = clock();
 }
 
 void ProjectionMapping2App::mouseDrag(MouseEvent event)
@@ -399,9 +397,11 @@ void ProjectionMapping2App::update()
 		sw = 7;
 		resetup(sw);
 		mVoice->stop();
+		elapsed_time += movie_time[avi];
 	}
-	else if (ch_time >= movie_time[avi] && sw == 7){
+	else if (ch_time >= elapsed_time && sw == 7){
 		sw = avi;
+		elapsed_time += program_time;
 		avi += 1;
 		if (avi == 8){
 			sw = 7;
@@ -787,8 +787,6 @@ void ProjectionMapping2App::update()
 
 void ProjectionMapping2App::draw()
 {
-	//	time_start = clock();
-
 
 	/*BasicApp*/
 	if (sw == 1){
@@ -1092,15 +1090,19 @@ void ProjectionMapping2App::draw()
 		DrawGaussian();
 	}
 
-	InputXY[0] = (float)((P2-P1)*x/100+P1); InputXY[1] = (float)((P4-P3)*y/100+P3);
-
-	for (int i = 0; i < contours.size(); i++){
-		count = contours.at(i).size();
-		x_buff = 0.0; y_buff = 0.0;
-		for (int j = 0; j < count; j++){
-			InputXY[0] = (P2-P1)*contours.at(i).at(j).x/100+P1;
-			InputXY[1] = (P4-P3)*contours.at(i).at(j).y/100+P3;
-			gl::drawSolidCircle(InputXY, 1);
+	gl::color(0.0f, 255.0f, 0.0f, 1.0f);
+#pragma omp parallel
+	{
+#pragma omp for
+		for (int i = 0; i < contours.size(); i++){
+			count = contours.at(i).size();
+			x_buff = 0.0;
+			y_buff = 0.0;
+			for (int j = 0; j < count; j++){
+				InputXY[0] = (P2 - P1)*contours.at(i).at(j).x / 100 + P1;
+				InputXY[1] = (P4 - P3)*contours.at(i).at(j).y / 100 + P3;
+				gl::drawSolidCircle(InputXY, 1);
+			}
 		}
 	}
 }
@@ -1164,8 +1166,8 @@ void ProjectionMapping2App::DrawGaussian(){
 			}
 		}
 	}
-	console() << soul_Pos_xy << endl;
-	gl::drawSolidCircle(soul_input, 10);
+	//console() << soul_Pos_xy << endl;
+	//gl::drawSolidCircle(soul_input, 10);
 	//gl::drawSolidCircle(xyLeftUp, 10);
 	//gl::drawSolidCircle(xyRightDown, 10);
 	//gl::drawSolidCircle(ci::Vec2f(soul_PosX,soul_PosY), 10);
@@ -1317,7 +1319,7 @@ void ProjectionMapping2App::resetup(int re_sw){
 	}
 
 	console() << app_name[re_sw] << endl;
-	time_start = clock();
+	//time_start = clock();
 }
 void ProjectionMapping2App::keyDown(KeyEvent event)
 {
