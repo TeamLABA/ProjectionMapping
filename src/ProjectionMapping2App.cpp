@@ -138,8 +138,8 @@ bool debag = true;
 const int sw_num = 8;
 
 const char app_name[8][32] = { { "fireApp" }, { "water" }, { "window" }, { "TurnCube" }, { "Shabon" }, { "soul" }, { "PenkiApp" }, { "movie" } };
-const int program_time = 100;
-const double movie_time[8] = {63,6,12,5,5,5,5,32}; 
+const int program_time = 10;
+const double movie_time[9] = {5,6,12,5,5,5,5,32,35}; 
 
 class ProjectionMapping2App : public AppNative {
 public:
@@ -154,6 +154,7 @@ public:
 	double clock_time = 0;
 	double ch_time = 0;
 	int elapsed_time;
+	bool input_flag;
 
 	/*camera_ctApp*/
 	int mouseX, mouseY;
@@ -292,11 +293,11 @@ void ProjectionMapping2App::setup()
 		}
 	}
 
-	sw = 7;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
-	avi = 0;	//movie 1:fire_water, 2:water_window, 0:openingMovie.mp4, 3:widow_TurnCube, 4:TurnCube_Shabon, 5~6:load, 7:endroll
+	sw = 0;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
+	avi = 1;	//movie 0:openingMovie,1:fire_water, 2:water_window, 3:widow_TurnCube, 4:TurnCube_Shabon, 5~7:load, 8:endroll,9:openingMovie
 	setFullScreen(!isFullScreen());
 	resetup(sw);
-	elapsed_time = movie_time[avi];
+	elapsed_time = program_time;
 
 	/*water*/
 	DIFFUSE = true;
@@ -395,22 +396,37 @@ void ProjectionMapping2App::update()
 
 	if (ch_time >= elapsed_time&&sw!=7){
 		sw = 7;
+		if (input_flag == false){
+			avi = 7;
+		}
 		resetup(sw);
 		mVoice->stop();
 		elapsed_time += movie_time[avi];
+		
 	}
 	else if (ch_time >= elapsed_time && sw == 7){
-		sw = avi;
-		elapsed_time += program_time;
-		avi += 1;
-		if (avi == 8){
-			sw = 7;
-			avi = 0;
+		if (input_flag == false){
+			avi ++;
+			if (avi == 9){
+				avi = 7;
+			}
+			resetup(sw);
+			elapsed_time += movie_time[avi];
 		}
-		resetup(sw);
+		else{
+			sw = avi;
+			elapsed_time += program_time;
+			avi += 1;
+			if (avi == 7){
+				avi = 0;
+			}
+			resetup(sw);
 
-		/*audio*/
-		if(sw!=7) mVoice->start();
+			/*audio*/
+			if (sw != 7) mVoice->start();
+
+			input_flag = false;
+		}
 	}
 
 	if (!debag){
@@ -434,14 +450,16 @@ void ProjectionMapping2App::update()
 
 		cv::findContours(dilate, contours, CV_RETR_LIST, CV_CHAIN_APPROX_NONE);
 
-		bx = 0.0; by = 0.0;
-		maxC = 0;
+		bx = 0.0;
+		by = 0.0;
+		maxC = 10;
 #pragma omp parallel
 		{
 #pragma omp ss
 			for (int i = 0; i < contours.size(); i++){
 				count = contours.at(i).size();
-				x_buff = 0.0; y_buff = 0.0;
+				x_buff = 0.0;
+				y_buff = 0.0;
 				if (count > maxC){
 					maxC = count;
 					for (int j = 0; j < count; j++){
@@ -453,9 +471,22 @@ void ProjectionMapping2App::update()
 				}
 			}
 		}
-
-		x = 100 * (bx - camera_X1) / (camera_X2 - camera_X1);
-		y = 100 * (by - camera_Y1) / (camera_Y2 - camera_Y1);
+		if (maxC > 10){
+			x = 100 * (bx - camera_X1) / (camera_X2 - camera_X1);
+			y = 100 * (by - camera_Y1) / (camera_Y2 - camera_Y1);
+			input_flag = true;
+			if (sw == 7 & (avi == 7 || avi == 8)){
+				sw = 6;
+				elapsed_time += 30;
+				avi = 0;
+				resetup(sw);
+				mVoice->start();
+			}
+		}
+		else{
+			x = -100;
+			y = -100;
+		}
 	}
 
 	/*BasicApp:1*/
@@ -1272,7 +1303,7 @@ void ProjectionMapping2App::resetup(int re_sw){
 			if (!avi_moviePath.empty())
 				loadMovieFile(avi_moviePath);
 		}
-		else if (avi == 0){
+		else if (avi == 8){
 			fs::path avi_moviePath("C:\\cinder_0.8.6_vc2013\\projects\\ProjectionMapping\\resources\\openingMovie.mp4");
 			if (!avi_moviePath.empty())
 				loadMovieFile(avi_moviePath);
@@ -1299,6 +1330,11 @@ void ProjectionMapping2App::resetup(int re_sw){
 		}
 		else if (avi == 7){
 			fs::path avi_moviePath("C:\\cinder_0.8.6_vc2013\\projects\\ProjectionMapping\\resources\\endroll.mp4");
+			if (!avi_moviePath.empty())
+				loadMovieFile(avi_moviePath);
+		}
+		else if (avi == 0){
+			fs::path avi_moviePath("C:\\cinder_0.8.6_vc2013\\projects\\ProjectionMapping\\resources\\load.mp4");
 			if (!avi_moviePath.empty())
 				loadMovieFile(avi_moviePath);
 		}
@@ -1332,12 +1368,22 @@ void ProjectionMapping2App::keyDown(KeyEvent event)
 		TurnCube_f = 1;
 		TurnCube_houkou = -1;
 	}
-	if (debag){
-		if (event.getChar() >= '0' && event.getChar() <= '7'){
-			sw = event.getChar() - 48;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
+	else if (event.getChar() == 'i'){
+		input_flag = true;
+		if (sw == 7 & (avi == 7 || avi == 8)){
+			sw = 6;
+			elapsed_time += 30;
+			avi = 0;
 			resetup(sw);
+			mVoice->start();
 		}
 	}
+	else if (event.getChar() >= '0' && event.getChar() <= '6'){
+		sw = event.getChar() - 48;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
+		resetup(sw);
+		avi = sw;
+	}
+
 }
 
 void ProjectionMapping2App::mouseDown(MouseEvent event){
