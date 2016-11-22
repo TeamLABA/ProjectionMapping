@@ -56,6 +56,11 @@
 
 #include "Resources.h"
 
+/*drawCountDown*/
+#include "cinder/Text.h"
+#include "cinder/Utilities.h"
+#include "cinder/Font.h"
+
 using namespace ci;
 using namespace ci::app;
 using namespace std;
@@ -63,12 +68,12 @@ using namespace cv;
 
 /*camera_ctApp*/
 gl::Texture mTexture;
-int camera_X1 = 87;	//カメラに映るパネル左上のx座標
-int camera_Y1 = 54;	//y座標
-int camera_X2 = 526;	//カメラに映るパネル右下の座標
-int camera_Y2 = 470;	//y座標
-//int D1x = 420;	//プログラム上での描画部分左上のx座標
-//int D1y = 112;	//y座標
+int camera_X1 = 169;	//カメラに映るパネル左上のx座標
+int camera_Y1 = 47;	//y座標
+int camera_X2 = 593;	//カメラに映るパネル右下の座標
+int camera_Y2 = 445;	//y座標
+int D1x = 420;	//プログラム上での描画部分左上のx座標
+int D1y = 112;	//y座標
 
 /*BasicApp*/
 GLfloat no_mat[] = { 0.0, 0.0, 0.0, 1.0 };
@@ -84,9 +89,11 @@ const int BasicApp_N2 = 102;	//位置合わせ用
 /*fireApp*/
 const int fireApp_buff = 100;
 const float fireApp_a = (const float)0.1;
-const float fireApp_XY[2] = { (float)(422), (float)(9) };
+const float fireApp_XY[2] = { (float)(422)/*271*/, (float)(9) /*148*/ };
 const int fireApp_N = (int)(425);
 const int fireApp_N2 = (int)(445);
+
+//位置合わせしたけど動かなくなりました_fire
 
 /*TurnCube*/
 GLfloat TurnCube_no_mat[] = { 1.0, 1.0, 1.0, 1.0 };
@@ -132,15 +139,14 @@ int P4 = 400 + 220 - 70;	//301
 
 /*Debug mode: true -> debag mode*/
 /*カメラがない場合はtrueにして実行してください*/
-bool debag = false;
+bool debag = true;
 
 /*切り替えるスイッチの数*/
 const int sw_num = 8;
 
 const char app_name[8][32] = { { "fireApp" }, { "water" }, { "window" }, { "TurnCube" }, { "Shabon" }, { "soul" }, { "PenkiApp" }, { "movie" } };
-const int program_time = 45;
-const double movie_time[9] = {5,6,12,5,5,5,5,32,35}; 
-
+const int elapsed_time = 45; //10[sec]
+const double movie_time[8] = {63,6,12,5,5,5,5,32}; 
 
 class ProjectionMapping2App : public AppNative {
 public:
@@ -154,8 +160,6 @@ public:
 
 	double clock_time = 0;
 	double ch_time = 0;
-	int elapsed_time;
-	bool input_flag;
 
 	/*camera_ctApp*/
 	int mouseX, mouseY;
@@ -199,6 +203,7 @@ public:
 
 	/*TurnCube*/
 	void reload();
+
 	void fileDrop(FileDropEvent event);
 
 	gl::Texture TurnCube_mTexture;
@@ -239,10 +244,11 @@ public:
 
 	/*soul lost*/
 	gl::Texture myImage, myImage2;
+	int soul_x, soul_y;
 	int Frag = 1;
 	double soul_Speed = 1.00;
 	ci::Vec2f soul_Pos, soul_input, now_xy, xyLeftUp, xyRightDown;
-	int soul_PosX, soul_PosY;
+	int soul_PosX = 271, soul_PosY = 148;
 	int soul_Count = 0;
 	int soul_f = 0;
 	double soul_G;
@@ -251,13 +257,22 @@ public:
 	double soul_N;
 	void DrawGaussian();
 	ci::Vec2f Pos_xy, InputXY;
-	double target[2];
 
+	/*drawCountDown*/
+	gl::Texture	Count_mTexture;
+	int countdown_num;
+	int countdown_count;
+	void drawCountDown2D();
+	void drawCountDown3D();
+	void updateCountDown();
+
+	//protected:
 	/*BasicApp*/
 	float BasicApp_pos[2][BasicApp_N2][BasicApp_N];
 	MayaCamUI mMayaCam;
 	CameraPersp cam;
 
+	//private:
 	/*PenkiApp*/
 	struct Waterdrop{
 		ci::Vec2d PenkiApp_pos;
@@ -294,11 +309,11 @@ void ProjectionMapping2App::setup()
 		}
 	}
 
-	sw = 0;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
-	avi = 1;	//movie 0:openingMovie,1:fire_water, 2:water_window, 3:widow_TurnCube, 4:TurnCube_Shabon, 5~7:load, 8:endroll,9:openingMovie
+	sw = 7;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
+
+	avi = 0;	//movie 1:fire_water, 2:water_window, 0:openingMovie.mp4, 3:widow_TurnCube, 4:TurnCube_Shabon, 5~6:load, 7:endroll
 	setFullScreen(!isFullScreen());
 	resetup(sw);
-	elapsed_time = program_time;
 
 	/*water*/
 	DIFFUSE = true;
@@ -363,8 +378,8 @@ void ProjectionMapping2App::setup()
 	xyLeftUp[1] = (float)P3;
 	xyRightDown[0] = (float)P2;
 	xyRightDown[1] = (float)P4;
-	soul_Pos[0]=soul_PosX = (int)xyLeftUp[0];
-	soul_Pos[1]=soul_PosY = (int)xyLeftUp[1];
+	soul_PosX = (int)xyLeftUp[0];
+	soul_PosY = (int)xyLeftUp[1];
 
 	/*audio*/
 	audio::SourceFileRef sourceFile = audio::load(loadAsset("Stream.mp3"));
@@ -376,7 +391,9 @@ void ProjectionMapping2App::setup()
 	mVoice->setPan(BGM_pan);
 	//->start();	//drawに移動
 
-	time_start = clock();
+	/*countdown*/
+	countdown_num=0;
+	countdown_count=0;
 }
 
 void ProjectionMapping2App::mouseDrag(MouseEvent event)
@@ -397,37 +414,20 @@ void ProjectionMapping2App::update()
 
 	if (ch_time >= elapsed_time&&sw!=7){
 		sw = 7;
-		if (input_flag == false){
-			avi = 7;
-		}
 		resetup(sw);
 		mVoice->stop();
-		elapsed_time += movie_time[avi];
-		
 	}
-	else if (ch_time >= elapsed_time && sw == 7){
-		if (input_flag == false){
-			avi ++;
-			if (avi == 9){
-				avi = 7;
-			}
-			resetup(sw);
-			elapsed_time += movie_time[avi];
+	else if (ch_time >= movie_time[avi] && sw == 7){
+		sw = avi;
+		avi += 1;
+		if (avi == 8){
+			sw = 7;
+			avi = 0;
 		}
-		else{
-			sw = avi;
-			elapsed_time += program_time;
-			avi += 1;
-			if (avi == 7){
-				avi = 0;
-			}
-			resetup(sw);
+		resetup(sw);
 
-			/*audio*/
-			if (sw != 7) mVoice->start();
-
-			input_flag = false;
-		}
+		/*audio*/
+		mVoice->start();
 	}
 
 	if (!debag){
@@ -435,35 +435,30 @@ void ProjectionMapping2App::update()
 		Mat input1(toOcv(mCap.getSurface()));
 		cvtColor(input1, hsv_image, CV_BGR2HSV);
 		if (sw == 0){
-			inRange(hsv_image, Scalar(10, 80, 30), Scalar(32, 255, 255), mask_image);
+			inRange(hsv_image, Scalar(10, 87, 170), Scalar(32, 158, 200), mask_image);
 		}
 		//if (sw == 0){
 		//	inRange(hsv_image, Scalar(16, 41, 120), Scalar(26, 71, 140), mask_image);	//black(shadow)
 		//}
 		else if (sw == 1){
-			inRange(hsv_image, Scalar(25, 70, 30), Scalar(35, 100, 255), mask_image);
-		}
-		else if (sw == 2){
-			inRange(hsv_image, Scalar(20, 100, 120), Scalar(40, 255, 255), mask_image);
+			inRange(hsv_image, Scalar(25, 70, 140), Scalar(35, 100, 160), mask_image);
 		}
 		else{
-			inRange(hsv_image, Scalar(20, 80, 120), Scalar(40, 255, 255), mask_image);
+			inRange(hsv_image, Scalar(20, 130, 140), Scalar(40, 170, 180), mask_image);
 		}
 		cv::erode(mask_image, erode, cv::Mat(), Point(-1, -1), 2);
 		cv::dilate(erode, dilate, cv::Mat(), Point(-1, -1), 4);
 
 		cv::findContours(dilate, contours, CV_RETR_LIST, CV_CHAIN_APPROX_NONE);
 
-		bx = 0.0;
-		by = 0.0;
-		maxC = 10;
+		bx = 0.0; by = 0.0;
+		maxC = 0;
 #pragma omp parallel
 		{
 #pragma omp ss
 			for (int i = 0; i < contours.size(); i++){
 				count = contours.at(i).size();
-				x_buff = 0.0;
-				y_buff = 0.0;
+				x_buff = 0.0; y_buff = 0.0;
 				if (count > maxC){
 					maxC = count;
 					for (int j = 0; j < count; j++){
@@ -475,22 +470,9 @@ void ProjectionMapping2App::update()
 				}
 			}
 		}
-		if (maxC > 10){
-			x = 100 * (bx - camera_X1) / (camera_X2 - camera_X1);
-			y = 100 * (by - camera_Y1) / (camera_Y2 - camera_Y1);
-			input_flag = true;
-			if (sw == 7 & (avi == 7 || avi == 8)){
-				sw = 6;
-				elapsed_time += 30;
-				avi = 0;
-				resetup(sw);
-				mVoice->start();
-			}
-		}
-		else{
-			x = -100;
-			y = -100;
-		}
+
+		x = 100 * (bx - camera_X1) / (camera_X2 - camera_X1);
+		y = 100 * (by - camera_Y1) / (camera_Y2 - camera_Y1);
 	}
 
 	/*BasicApp:1*/
@@ -775,53 +757,51 @@ void ProjectionMapping2App::update()
 
 	/*soul:5*/
 	if (sw == 5){	
-		soul_input[0] = (int)((P2 - P1)*x / 100 + P1);
-		soul_input[1] = (int)((P4 - P3)*y / 100 + P3);
+			soul_x = (int)((P2 - P1)*x / 100 + P1);
+			soul_y = (int)((P4 - P3)*y / 100 + P3);
 
-		if (soul_PosY == xyLeftUp[1]&&soul_PosX != xyRightDown[0]){
-			soul_PosX += 1;
+		soul_input[0] = (float)soul_x;	soul_input[1] = (float)soul_y;
+		if (soul_PosX == xyLeftUp[0] && soul_PosY == xyLeftUp[1]){
+			soul_Count = (int)(xyRightDown[0] - xyLeftUp[0] + 1);
+			soul_f = 1;
 		}
-		else if (soul_PosX == xyRightDown[0] && soul_PosY != xyRightDown[1]){
-			soul_PosY += 1;
+		else if (soul_PosX >= xyRightDown[0] && soul_PosY == xyLeftUp[1]){
+			soul_Count = (int)(xyRightDown[1] - xyLeftUp[1]);
+			soul_f = 2;
 		}
-		else if (soul_PosX != xyLeftUp[0] && soul_PosY == xyRightDown[1]){
-			soul_PosX -= 1;
+		else if (soul_PosX == xyRightDown[0] && soul_PosY == xyRightDown[1]){
+			soul_Count = (int)(xyRightDown[0] - xyLeftUp[0]);
+			soul_f = 3;
 		}
-		else if (soul_PosX == xyLeftUp[0] && soul_PosY != xyLeftUp[1]){
-			soul_PosY -= 1;
+		else if (soul_PosX == xyLeftUp[0] && soul_PosY == xyRightDown[1]){
+			soul_Count = (int)(xyRightDown[1] - xyLeftUp[1]);
+			soul_f = 4;
 		}
 
-		//soul_Pos[0] = (float)soul_PosX;	//現在座標をコピー
-		//soul_Pos[1] = (float)soul_PosY;	//
-
-		if (soul_input[0] > xyLeftUp[0] && soul_input[0]<xyRightDown[0] && soul_input[1]>xyLeftUp[1] && soul_input[1] < xyRightDown[1]){
-			target[0] = soul_input[0];
-			target[1] = soul_input[1];
+		if (soul_f == 1 && soul_Count > 0){
+			soul_PosX += 1; soul_Count -= 1;
 		}
-		else{
-			target[0] = soul_PosX;
-			target[1] = soul_PosY;
+		else if (soul_f == 2 && soul_Count > 0){
+			soul_PosY += 1; soul_Count -= 1;
 		}
-		soul_N = abs(target[1] - soul_Pos[1]) / abs(target[0] - soul_Pos[0]);
-		if (soul_N <= 1){
-			soul_N = (target[1] - soul_Pos[1]) / (target[0] - soul_Pos[0]);
-			if (abs(target[0] - soul_Pos[0]) > 1){
-				soul_Pos[0] += (int)((target[0] - soul_Pos[0]) / abs(target[0] - soul_Pos[0]));
-				soul_Pos[1] = (int)(soul_Pos[1] + soul_N + 0.5);
-			}
+		else if (soul_f == 3 && soul_Count > 0){
+			soul_PosX -= 1; soul_Count -= 1;
 		}
-		else{
-			soul_N = (target[0] - soul_Pos[0]) / (target[1] - soul_Pos[1]);
-			if (abs(target[1] - soul_Pos[1]) > 1){
-				soul_Pos[0] = (int)(soul_Pos[0] + soul_N + 0.5);
-				soul_Pos[1] += (int)((target[1] - soul_Pos[1]) / abs(target[1] - soul_Pos[1]));
-			}
+		else if (soul_f == 4 && soul_Count > 0){
+			soul_PosY -= 1; soul_Count -= 1;
 		}
+		soul_Pos[0] = (float)soul_PosX;
+		soul_Pos[1] = (float)soul_PosY;
 	}
+
+
+	updateCountDown();
 }
 
 void ProjectionMapping2App::draw()
 {
+	//	time_start = clock();
+
 
 	/*BasicApp*/
 	if (sw == 1){
@@ -906,6 +886,9 @@ void ProjectionMapping2App::draw()
 					gl::drawSolidEllipse(ci::Vec2d(fireApp_XY[0] + j, fireApp_XY[1] + i), 1.0, 1.0);
 				}
 			}
+		}
+		if (elapsed_time-ch_time <= 10){
+			drawCountDown2D();
 		}
 	}
 
@@ -1122,26 +1105,46 @@ void ProjectionMapping2App::draw()
 	/*soul:5*/
 	else if (sw == 5){
 		gl::clear(Color(0, 0, 0));
-		DrawGaussian();
+		if (soul_input[0]>xyLeftUp[0] && soul_input[0]<xyRightDown[0] && soul_input[1]>xyLeftUp[1] && soul_input[1]<xyRightDown[1]){	//マウスカーソルが窓内にあるとき
+			soul_INorOUT = 1;
+			soul_f = 5;
+
+			soul_N = abs(soul_input[1] - soul_Pos[1]) / abs(soul_input[0] - soul_Pos[0]);
+
+			if (soul_N <= 1){
+				soul_N = (soul_input[1] - soul_Pos[1]) / (soul_input[0] - soul_Pos[0]);
+				soul_PosX += (int)((soul_input[0] - soul_Pos[0]) / abs(soul_input[0] - soul_Pos[0]));
+				soul_PosY = (int)(soul_PosY + soul_N + 0.5);
+			}
+			else{
+				soul_N = (soul_input[0] - soul_Pos[0]) / (soul_input[1] - soul_Pos[1]);
+				soul_PosX = (int)(soul_PosX + soul_N + 0.5);
+				soul_PosY += (int)((soul_input[1] - soul_Pos[1]) / abs(soul_input[1] - soul_Pos[1]));
+			}
+
+			DrawGaussian();
+
+		}
+		else{
+			if (soul_INorOUT == 1){
+				soul_PosX = (int)xyLeftUp[0]; 
+				soul_PosY = (int)xyLeftUp[1]; 
+			}
+			soul_INorOUT = 2;
+			DrawGaussian();
+		}
 	}
 
-	if (sw==0||(sw>=4&&sw<=6)){
-		gl::color(0.0f, 0.0f, 255.0f, 1.0f);
-#pragma omp parallel
-		{
-#pragma omp for
-			for (int i = 0; i < contours.size(); i++){
-				count = contours.at(i).size();
-				for (int j = 0; j < count; j++){
-					//InputXY[0] = (P2 - P1)*contours.at(i).at(j).x / 100 + P1;
-					//InputXY[1] = (P4 - P3)*contours.at(i).at(j).y / 100 + P3;
-					InputXY[0] = 1280 * contours.at(i).at(j).x / 640;
-					InputXY[1] = 720 * contours.at(i).at(j).y / 480;
-					gl::drawSolidCircle(InputXY, 1);
-				}
-			}
+	InputXY[0] = (float)((P2-P1)*x/100+P1); InputXY[1] = (float)((P4-P3)*y/100+P3);
+
+	for (int i = 0; i < contours.size(); i++){
+		count = contours.at(i).size();
+		x_buff = 0.0; y_buff = 0.0;
+		for (int j = 0; j < count; j++){
+			InputXY[0] = (P2-P1)*contours.at(i).at(j).x/100+P1;
+			InputXY[1] = (P4-P3)*contours.at(i).at(j).y/100+P3;
+			gl::drawSolidCircle(InputXY, 1);
 		}
-		gl::drawSolidCircle(ci::Vec2f((P2 - P1)*x / 100 + P1, (P4 - P3)*y / 100 + P3), 5);
 	}
 }
 
@@ -1197,18 +1200,12 @@ void ProjectionMapping2App::DrawGaussian(){
 
 			if (soul_D < sqrt(13)){
 				soul_D = ceil(soul_D);
-				soul_Pos_xy[0] = soul_Pos[0] + i;
-				soul_Pos_xy[1] = soul_Pos[1] + j;
+				soul_Pos_xy[0] = soul_Pos[0] + i; soul_Pos_xy[1] = soul_Pos[1] + j;
 				gl::color(color[(int)soul_D]);
 				gl::drawSolidCircle(soul_Pos_xy, 1.5);
 			}
 		}
 	}
-	//console() << soul_Pos_xy << endl;
-	//gl::drawSolidCircle(soul_input, 10);
-	//gl::drawSolidCircle(xyLeftUp, 10);
-	//gl::drawSolidCircle(xyRightDown, 10);
-	//gl::drawSolidCircle(ci::Vec2f(soul_PosX,soul_PosY), 10);
 }
 
 void ProjectionMapping2App::resetup(int re_sw){
@@ -1310,7 +1307,7 @@ void ProjectionMapping2App::resetup(int re_sw){
 			if (!avi_moviePath.empty())
 				loadMovieFile(avi_moviePath);
 		}
-		else if (avi == 8){
+		else if (avi == 0){
 			fs::path avi_moviePath("C:\\cinder_0.8.6_vc2013\\projects\\ProjectionMapping\\resources\\openingMovie.mp4");
 			if (!avi_moviePath.empty())
 				loadMovieFile(avi_moviePath);
@@ -1340,29 +1337,16 @@ void ProjectionMapping2App::resetup(int re_sw){
 			if (!avi_moviePath.empty())
 				loadMovieFile(avi_moviePath);
 		}
-		else if (avi == 0){
-			fs::path avi_moviePath("C:\\cinder_0.8.6_vc2013\\projects\\ProjectionMapping\\resources\\load.mp4");
-			if (!avi_moviePath.empty())
-				loadMovieFile(avi_moviePath);
-		}
 	}
 
 	/*soul:5*/
 	else if (re_sw == 5){
-		soul_Pos[0] = soul_PosX = (int)xyLeftUp[0];
-		soul_Pos[1] = soul_PosY = (int)xyLeftUp[1];
-		setFullScreen(!isFullScreen());
-		setFullScreen(!isFullScreen());
-	}
-
-	/*Penki:6*/
-	else if (re_sw == 6){
-		setFullScreen(!isFullScreen());
-		setFullScreen(!isFullScreen());
+		soul_PosX = (int)xyLeftUp[0];
+		soul_PosY = (int)xyLeftUp[1];
 	}
 
 	console() << app_name[re_sw] << endl;
-	//time_start = clock();
+	time_start = clock();
 }
 void ProjectionMapping2App::keyDown(KeyEvent event)
 {
@@ -1375,28 +1359,47 @@ void ProjectionMapping2App::keyDown(KeyEvent event)
 		TurnCube_f = 1;
 		TurnCube_houkou = -1;
 	}
-	else if (event.getChar() == 'i'){
-		input_flag = true;
-		if (sw == 7 & (avi == 7 || avi == 8)){
-			sw = 6;
-			elapsed_time += 30;
-			avi = 0;
+	if (debag){
+		if (event.getChar() >= '0' && event.getChar() <= '7'){
+			sw = event.getChar() - 48;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
 			resetup(sw);
-			mVoice->start();
 		}
 	}
-	else if (event.getChar() >= '0' && event.getChar() <= '6'){
-		sw = event.getChar() - 48;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
-		resetup(sw);
-		avi = sw;
-	}
-
 }
 
 void ProjectionMapping2App::mouseDown(MouseEvent event){
 	x = event.getX() * 2;
 	y = event.getY()*2.6667;
 	console() << x << "," << y << endl;
+}
+
+void ProjectionMapping2App::drawCountDown2D(){
+	//glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	//glClear(GL_COLOR_BUFFER_BIT);
+	gl::setMatricesWindow(getWindowSize());
+
+	gl::enableAlphaBlending(false);
+
+	gl::color(Color::white());
+	gl::draw(Count_mTexture, ci::Vec2f(1000, 600));
+}
+void ProjectionMapping2App::updateCountDown(){
+	TextLayout layout;
+	layout.clear(ColorA(0.2f, 0.2f, 0.2f, 0.2f));
+	layout.setFont(Font("Arial", 24));
+	layout.setColor(Color(1, 1, 1));
+	layout.addLine(std::string(to_string(countdown_num)));
+	Surface8u rendered = layout.render(true, false);
+	Count_mTexture = gl::Texture(rendered);
+	countdown_num = elapsed_time - ch_time;
+}
+void ProjectionMapping2App::drawCountDown3D(){
+	gl::setMatricesWindow(getWindowSize());
+
+	gl::enableAlphaBlending(false);
+
+	gl::color(Color::white());
+	//gl::draw(Count_mTexture, ci::Vec3f(1000, 600, 1), ci::Vec3f(1000, 600, 1));
 }
 
 CINDER_APP_NATIVE(ProjectionMapping2App, RendererGl)
