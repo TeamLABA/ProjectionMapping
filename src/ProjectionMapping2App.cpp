@@ -142,8 +142,8 @@ bool debag = false;
 /*切り替えるスイッチの数*/
 const int sw_num = 8;
 
-const char app_name[8][32] = { { "fireApp" }, { "water" }, { "window" }, { "TurnCube" }, { "Shabon" }, { "soul" }, { "PenkiApp" }, { "movie" } };
-const int elapsed_time = 45; 
+const char app_name[8][32] = { { "fireApp" }, { "water" }, { "window" }, { "TurnCube" }, { "Shabon" }, { "soul" }, { "PenkiApp" }, { "movie" } }; 
+const int program_time = 45;
 const double movie_time[9] = {5,6,12,5,5,5,5,32,35}; 
 
 class ProjectionMapping2App : public AppNative {
@@ -423,13 +423,14 @@ void ProjectionMapping2App::update()
 
 	}
 	else if (ch_time >= elapsed_time && sw == 7){
- 		if (input_flag == false){
- 			avi ++;
- 			if (avi == 9){
- 				avi = 7;
- 			}
- 			resetup(sw);
- 			elapsed_time += movie_time[avi];
+		if (input_flag == false){
+			avi++;
+			if (avi == 9){
+				avi = 7;
+			}
+			resetup(sw);
+			elapsed_time += movie_time[avi];
+		}
 		else{
  				sw = avi;
  				elapsed_time += program_time;
@@ -441,9 +442,9 @@ void ProjectionMapping2App::update()
  
  				/*audio*/
  				if (sw != 7) mVoice->start();
-		resetup(sw);
+				resetup(sw);
 
-				imput_flag = false;
+				input_flag = false;
 		}
 	}
 
