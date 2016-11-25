@@ -929,9 +929,6 @@ void ProjectionMapping2App::draw()
 				}
 			}
 		}
-		if (elapsed_time-ch_time <= 10){
-			drawCountDown2D();
-		}
 	}
 
 	/*PenkiApp:6*/
@@ -1167,6 +1164,11 @@ void ProjectionMapping2App::draw()
 			}
 		}
 		gl::drawSolidCircle(ci::Vec2f((P2 - P1)*x / 100 + P1, (P4 - P3)*y / 100 + P3), 5);
+	}
+	if (sw != 7){
+		if (elapsed_time - ch_time <= 10){
+			drawCountDown2D();
+		}
 	}
 }
 
@@ -1432,25 +1434,17 @@ void ProjectionMapping2App::drawCountDown2D(){
 	gl::enableAlphaBlending(false);
 
 	gl::color(Color::white());
-	gl::draw(Count_mTexture, ci::Vec2f(1000, 600));
+	gl::draw(Count_mTexture, ci::Vec2f(615, 50));
 }
 void ProjectionMapping2App::updateCountDown(){
 	TextLayout layout;
 	layout.clear(ColorA(0.2f, 0.2f, 0.2f, 0.2f));
-	layout.setFont(Font("Arial", 24));
+	layout.setFont(Font("Arial", 50));
 	layout.setColor(Color(1, 1, 1));
 	layout.addLine(std::string(to_string(countdown_num)));
 	Surface8u rendered = layout.render(true, false);
 	Count_mTexture = gl::Texture(rendered);
 	countdown_num = elapsed_time - ch_time;
-}
-void ProjectionMapping2App::drawCountDown3D(){
-	gl::setMatricesWindow(getWindowSize());
-
-	gl::enableAlphaBlending(false);
-
-	gl::color(Color::white());
-	//gl::draw(Count_mTexture, ci::Vec3f(1000, 600, 1), ci::Vec3f(1000, 600, 1));
 }
 
 CINDER_APP_NATIVE(ProjectionMapping2App, RendererGl)
