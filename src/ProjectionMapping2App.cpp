@@ -438,7 +438,6 @@ void ProjectionMapping2App::update()
  				if (avi == 7){
  					avi = 0;
  				}
- 				resetup(sw);
  
  				/*audio*/
  				if (sw != 7) mVoice->start();
@@ -1383,6 +1382,7 @@ void ProjectionMapping2App::resetup(int re_sw){
  
  	/*Penki:6*/
  	else if (re_sw == 6){
+		waterdrops.clear();
  		setFullScreen(!isFullScreen());
  		setFullScreen(!isFullScreen());
 	}
@@ -1413,6 +1413,7 @@ void ProjectionMapping2App::keyDown(KeyEvent event)
 	else if (event.getChar() >= '0' && event.getChar() <= '6'){
  		sw = event.getChar() - 48;		//0:fireApp, 1:water, 2:window, 3:TurnCube, 4:Shabon, 5:soul, 6:PenkiApp, 7:movie
  		resetup(sw);
+		elapsed_time += 30;
  		avi = sw;
  	}
 }
