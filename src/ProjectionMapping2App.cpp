@@ -768,18 +768,16 @@ void ProjectionMapping2App::update()
 		if (x > 0 && y > 0 && x < 100 && y < 100){
 			window_flag = 1;
 		}
+		else{
+			window_flag = -1;
+		}
 
 		window_r += window_flag * 2;
-		if (window_r > 110){
-			window_cnt++;
+		if (window_r < 0){
+			window_r = 0;
+		}
+		else if (window_r >110)
 			window_r = 110;
-		}
-		if (window_cnt > 50){
-			window_flag *= -1;
-			window_cnt = 0;
-		}
-		if (window_r < 0)
-			window_flag = 0;
 
 		if (movie)
 			movie_mSurface = movie.getSurface();
