@@ -389,6 +389,7 @@ void ProjectionMapping2App::setup()
 	mVoice->setVolume(BGM_volume);
 	mVoice->setPan(BGM_pan);
 	//->start();	//draw‚ÉˆÚ“®
+	mVoice->start();
 
 	time_start = clock();
 	/*countdown*/
@@ -1163,7 +1164,7 @@ void ProjectionMapping2App::draw()
 		}
 		gl::drawSolidCircle(ci::Vec2f((P2 - P1)*x / 100 + P1, (P4 - P3)*y / 100 + P3), 5);
 	}
-	if (sw != 7){
+	if (sw != 2 && sw != 7){
 		if (elapsed_time - ch_time <= 10){
 			drawCountDown2D();
 		}
@@ -1415,6 +1416,7 @@ void ProjectionMapping2App::keyDown(KeyEvent event)
  		resetup(sw);
 		elapsed_time += 30;
  		avi = sw;
+		mVoice->start();
  	}
 }
 
